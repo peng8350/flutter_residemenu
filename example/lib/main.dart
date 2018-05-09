@@ -45,6 +45,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  MenuController _menuController;
 
   void _incrementCounter() {
     setState(() {
@@ -58,6 +59,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _menuController = new MenuController();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -65,7 +73,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return new ResideMenu(child: new Scaffold(
+    return new ResideMenu(
+    controller: _menuController
+    ,child: new Scaffold(
       appBar: new AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
@@ -91,8 +101,19 @@ class _MyHomePageState extends State<MyHomePage> {
             // horizontal).
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              new Text(
-                'You have pushed the button this many times:',
+              new RaisedButton(
+
+                child: new Text('打开'),
+                onPressed: (){
+                  _menuController.openMenu();
+                },
+              ),
+              new RaisedButton(
+
+                child: new Text('关闭'),
+                onPressed: (){
+                  _menuController.closeMenu();
+                },
               ),
               new Text(
                 'You have pushed the button this many times:',

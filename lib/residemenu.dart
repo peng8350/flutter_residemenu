@@ -53,8 +53,11 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   void _onScrollMove(DragUpdateDetails details) {
-    double offset = details.globalPosition.dx - _startX;
-    if (offset <= 1.0 && offset <= 1.0) {}
+    print("move");
+    double offset = (details.globalPosition.dx - _startX)/_width*2.0;
+    if (offset <= 1.0 && offset >=0.0) {
+      _offsetController.value = offset;
+    }
   }
 
   void _onScrollEnd(DragEndDetails details) {
@@ -67,7 +70,10 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     _offsetController = new AnimationController(
-        value: 1.0, vsync: this, duration: const Duration(microseconds: 200));
+         vsync: this, duration: const Duration(microseconds: 200));
+    if(widget.controller!=null){
+      widget.controller._bind(_offsetController);
+    }
   }
 
   @override
@@ -178,9 +184,27 @@ class _MenuTransition extends AnimatedWidget {
 }
 
 class MenuController extends ChangeNotifier {
-  double offset;
+  AnimationController _animation;
 
-  void openMenu() {}
+  void openMenu() {
+    if(isClose)
+    _animation.animateTo(1.0);
+  }
 
-  void closeMenu() {}
+  void closeMenu() {
+    if(isOpen)
+    _animation.animateTo(0.0);
+  }
+
+  void _bind(AnimationController animation){
+    _animation = animation;
+  }
+
+  double get offset => _animation.value;
+
+  bool get isOpen => _animation.value==1.0;
+
+  bool get isClose => _animation.value ==0.0;
+
+
 }
