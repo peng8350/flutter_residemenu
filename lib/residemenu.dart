@@ -9,12 +9,25 @@ library residemenu;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+typedef void OnOpen();
+typedef void OnClose();
+typedef void OnOffsetChange(double offset);
+
+enum ScrollDirection{
+  left,right
+}
 
 class ResideMenu extends StatefulWidget {
 
   final Widget child;
 
-  ResideMenu({@required this.child,Key key}):assert(child!=null),super(key:key);
+  final ScrollDirection direction;
+
+  final Widget body;
+
+
+
+  ResideMenu({@required this.child,this.body,this.direction,Key key}):assert(child!=null),super(key:key);
 
   @override
   _ResideMenuState createState() => new _ResideMenuState();
@@ -39,6 +52,18 @@ class _ResideMenuState extends State<ResideMenu> {
       );
     });
   }
+}
+
+class MenuListener {
+
+  final OnOpen onOpen;
+
+  final OnClose onClose;
+
+  final OnOffsetChange onOffsetChange;
+
+  MenuListener({this.onClose,this.onOpen,this.onOffsetChange});
+
 }
 
 
