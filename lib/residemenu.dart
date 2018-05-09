@@ -24,7 +24,7 @@ class ResideMenu extends StatefulWidget {
 
   final MenuListener listener;
 
-  final MenuController controller;
+  MenuController controller;
 
   ResideMenu(
       {@required this.child,
@@ -53,7 +53,6 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   void _onScrollMove(DragUpdateDetails details) {
-    print("move");
     double offset = (details.globalPosition.dx - _startX)/_width*2.0;
     if (offset <= 1.0 && offset >=0.0) {
       _offsetController.value = offset;
@@ -70,10 +69,11 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     _offsetController = new AnimationController(
-         vsync: this, duration: const Duration(microseconds: 200));
-    if(widget.controller!=null){
-      widget.controller._bind(_offsetController);
+         vsync: this, duration: const Duration(milliseconds: 300));
+    if(widget.controller==null){
+      widget.controller = new MenuController();
     }
+    widget.controller._bind(_offsetController);
   }
 
   @override
@@ -90,8 +90,13 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
               color: const Color(0xffff0000),
               height: cons.biggest.height,
             ),
-            new _MenuTransition(
-                child: widget.child, menuOffset: _offsetController)
+            new GestureDetector(
+              onTap: (){
+                widget.controller.closeMenu();
+              },
+              child: new _MenuTransition(
+                  child: widget.child, menuOffset: _offsetController),
+            )
           ],
         ),
       );
@@ -183,8 +188,9 @@ class _MenuTransition extends AnimatedWidget {
   }
 }
 
-class MenuController extends ChangeNotifier {
+class MenuController {
   AnimationController _animation;
+
 
   void openMenu() {
     if(isClose)
