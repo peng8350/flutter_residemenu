@@ -41,17 +41,44 @@ class ResideMenu extends StatefulWidget {
 }
 
 class _ResideMenuState extends State<ResideMenu> {
+
+  double _startX = 0.0;
+  double _width = 0.0;
+  bool _isDraging = false;
+
+
+
+  void onScrollMove(details){
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return new LayoutBuilder(builder: (context, cons) {
-      return new Stack(
-        children: <Widget>[
-          new Container(
-            color: const Color(0xffff0000),
-            height: cons.biggest.height,
-          ),
-          widget.child,
-        ],
+      return new GestureDetector(
+        onHorizontalDragStart: (details){
+          _startX = details.globalPosition.dx;
+          _isDraging = true;
+        },
+        onHorizontalDragUpdate: (DragUpdateDetails details){
+          double offset = details.globalPosition.dx-_startX;
+          if(offset<=1.0&&offset<=1.0){
+
+          }
+        },
+        onHorizontalDragDown: (details){
+          _startX = 0.0;
+          _isDraging = false;
+        },
+        child: new Stack(
+          children: <Widget>[
+            new Container(
+              color: const Color(0xffff0000),
+              height: cons.biggest.height,
+            ),
+            widget.child,
+          ],
+        ),
       );
     });
   }
@@ -67,10 +94,15 @@ class MenuListener {
   MenuListener({this.onClose, this.onOpen, this.onOffsetChange});
 }
 
-class MenuController {
+class MenuController extends ChangeNotifier {
   double offset;
 
   void openMenu() {}
 
-  void closeMenu() {}
+  void closeMenu() {
+  }
+
+
+
+
 }
