@@ -40,43 +40,52 @@ class ResideMenu extends StatefulWidget {
   _ResideMenuState createState() => new _ResideMenuState();
 }
 
-class _ResideMenuState extends State<ResideMenu> {
-
+class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   double _startX = 0.0;
   double _width = 0.0;
   bool _isDraging = false;
 
+  AnimationController _offsetController;
 
+  void _onScrollStart(DragStartDetails details) {
+    _startX = details.globalPosition.dx;
+    _isDraging = true;
+  }
 
-  void onScrollMove(details){
+  void _onScrollMove(DragUpdateDetails details) {
+    double offset = details.globalPosition.dx - _startX;
+    if (offset <= 1.0 && offset <= 1.0) {}
+  }
 
+  void _onScrollEnd(DragEndDetails details) {
+    _startX = 0.0;
+    _isDraging = false;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _offsetController = new AnimationController(
+        value: 1.0, vsync: this, duration: const Duration(microseconds: 200));
   }
 
   @override
   Widget build(BuildContext context) {
     return new LayoutBuilder(builder: (context, cons) {
+      _width = cons.biggest.width;
       return new GestureDetector(
-        onHorizontalDragStart: (details){
-          _startX = details.globalPosition.dx;
-          _isDraging = true;
-        },
-        onHorizontalDragUpdate: (DragUpdateDetails details){
-          double offset = details.globalPosition.dx-_startX;
-          if(offset<=1.0&&offset<=1.0){
-
-          }
-        },
-        onHorizontalDragDown: (details){
-          _startX = 0.0;
-          _isDraging = false;
-        },
+        onHorizontalDragStart: _onScrollStart,
+        onHorizontalDragUpdate: _onScrollMove,
+        onHorizontalDragEnd: _onScrollEnd,
         child: new Stack(
           children: <Widget>[
             new Container(
               color: const Color(0xffff0000),
               height: cons.biggest.height,
             ),
-            widget.child,
+            new _MenuTransition(
+                child: widget.child, menuOffset: _offsetController)
           ],
         ),
       );
@@ -89,7 +98,6 @@ class MenuListener {
   final OnClose onClose;
 
   final OnOffsetChange onOffsetChange;
-
   MenuListener({this.onClose, this.onOpen, this.onOffsetChange});
 }
 
@@ -141,26 +149,31 @@ class MenuListener {
 //}
 //}
 
-class _MenuTransition extends AnimatedBuilder{
-
-  final Animation<double> menuOffset;
-
+class _MenuTransition extends AnimatedWidget {
   final Widget child;
 
-  final double width;
+  _MenuTransition(
+      {@required this.child, @required Animation<double> menuOffset, Key key})
+      : super(key: key, listenable: menuOffset);
 
-
-
-  _MenuTransition({@required this.child,@required this.menuOffset,Key key,this.width:300.0}):super(key:key);
-
-
+  Animation<double> get menuOffset => listenable;
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    final Matrix4 transform = new Matrix4.identity()
-      ..scale(menuOffset.value, menuOffset.value, 1.0);
-    return new Positioned(child: new Transform(transform: transform,child: child,),left: menuOffset.value*width*0.8 ,);
+
+    return new LayoutBuilder(builder: (context, cons) {
+      double width = cons.biggest.width;
+      double height = cons.biggest.height;
+      final Matrix4 transform = new Matrix4.identity()
+        ..scale(1.0 - 0.2 * menuOffset.value, 1 - 0.2 * menuOffset.value, 1.0)
+        ..translate(menuOffset.value*0.7*width);
+      ;
+      return new Transform(
+          transform: transform,
+          child: child,
+          origin: new Offset(width, height / 2));
+    });
   }
 }
 
@@ -169,10 +182,5 @@ class MenuController extends ChangeNotifier {
 
   void openMenu() {}
 
-  void closeMenu() {
-  }
-
-
-
-
+  void closeMenu() {}
 }
