@@ -86,12 +86,82 @@ class _ResideMenuState extends State<ResideMenu> {
 
 class MenuListener {
   final OnOpen onOpen;
-
   final OnClose onClose;
 
   final OnOffsetChange onOffsetChange;
 
   MenuListener({this.onClose, this.onOpen, this.onOffsetChange});
+}
+
+///// Creates a size transition.
+/////
+///// The [sizeFactor] argument must not be null. The [axis] argument defaults
+///// to [Axis.vertical]. The [axisAlignment] defaults to 0.0, which centers the
+///// child along the main axis during the transition.
+//const SizeTransition({
+//Key key,
+//this.axis: Axis.vertical,
+//@required Animation<double> sizeFactor,
+//this.axisAlignment: 0.0,
+//this.child,
+//}) : assert(axis != null),
+//super(key: key, listenable: sizeFactor);
+//
+///// [Axis.horizontal] if [sizeFactor] modifies the width, otherwise [Axis.vertical].
+//final Axis axis;
+//
+///// The animation that controls the (clipped) size of the child. If the current value
+///// of sizeFactor is v then the width or height of the widget will be its intrinsic
+///// width or height multiplied by v.
+//Animation<double> get sizeFactor => listenable;
+//
+///// How to align the child along the axis that sizeFactor is modifying.
+//final double axisAlignment;
+//
+///// The widget below this widget in the tree.
+/////
+///// {@macro flutter.widgets.child}
+//final Widget child;
+//
+//@override
+//Widget build(BuildContext context) {
+//  AlignmentDirectional alignment;
+//  if (axis == Axis.vertical)
+//    alignment = new AlignmentDirectional(-1.0, axisAlignment);
+//  else
+//    alignment = new AlignmentDirectional(axisAlignment, -1.0);
+//  return new ClipRect(
+//      child: new Align(
+//        alignment: alignment,
+//        heightFactor: axis == Axis.vertical ? math.max(sizeFactor.value, 0.0) : null,
+//        widthFactor: axis == Axis.horizontal ? math.max(sizeFactor.value, 0.0) : null,
+//        child: child,
+//      )
+//  );
+//}
+//}
+
+class _MenuTransition extends AnimatedBuilder{
+
+  final Animation<double> menuOffset;
+
+  final Widget child;
+
+  final double width;
+
+
+
+  _MenuTransition({@required this.child,@required this.menuOffset,Key key,this.width:300.0}):super(key:key);
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    final Matrix4 transform = new Matrix4.identity()
+      ..scale(menuOffset.value, menuOffset.value, 1.0);
+    return new Positioned(child: new Transform(transform: transform,child: child,),left: menuOffset.value*width*0.8 ,);
+  }
 }
 
 class MenuController extends ChangeNotifier {
