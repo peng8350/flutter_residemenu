@@ -13,14 +13,14 @@ typedef void OnOpen();
 typedef void OnClose();
 typedef void OnOffsetChange(double offset);
 
-enum ScrollDirection { left, right }
+enum ScrollDirection { left, right,both }
 
 class ResideMenu extends StatefulWidget {
   final Widget child;
 
   final ScrollDirection direction;
 
-  final Widget body;
+  final Widget leftView,rightView;
 
   final double elevation;
 
@@ -28,9 +28,10 @@ class ResideMenu extends StatefulWidget {
 
   ResideMenu(
       {@required this.child,
-      this.body,
+      this.leftView,
+        this.rightView,
       this.direction,
-        this.elevation:12.0,
+      this.elevation: 12.0,
       this.controller,
       Key key})
       : assert(child != null),
@@ -43,9 +44,10 @@ class ResideMenu extends StatefulWidget {
 class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   double _startX = 0.0;
   double _width = 0.0;
-  bool _isDraging = false;
-  double _offset = 0.0;
-
+  double _offset = 99.0;
+  //check if user scroll left,or is Right
+  bool _isLeft = true;
+  // this will controll ContainerAnimation
   AnimationController _offsetController;
 
   void _onScrollStart(DragStartDetails details) {
@@ -54,9 +56,6 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
 
   void _onScrollMove(DragUpdateDetails details) {
     _offset = (details.globalPosition.dx - _startX) / _width * 2.0;
-    if (_offset >= 0.05) {
-      _isDraging = true;
-    }
     if (widget.controller.isOpened) {
       _offset = 1.0 + _offset;
     }
@@ -66,16 +65,30 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   void _onScrollEnd(DragEndDetails details) {
-    print(_offset);
-    if (!_isDraging) return;
+    if (_offset == 99.0) return;
     if (_offset > 0.5) {
       widget.controller.openMenu();
     } else {
+      print("qqq");
       widget.controller.closeMenu();
     }
     _startX = 0.0;
-    _isDraging = false;
-    _offset = 0.0;
+    _offset = 99.0;
+  }
+
+  Widget buildMenuView(){
+    if(_isLeft){
+      return new Align(
+        alignment: Alignment.topLeft,
+        child: widget.leftView,
+      );
+    }
+    else{
+      return new Align(
+        alignment: Alignment.topLeft,
+        child: widget.rightView,
+      );
+    }
   }
 
   @override
@@ -103,6 +116,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
             new Container(
               color: const Color(0xffff0000),
               height: cons.biggest.height,
+              child: buildMenuView(),
             ),
             new GestureDetector(
               onTap: () {
@@ -112,12 +126,12 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                   child: new Container(
                     child: widget.child,
                     decoration: new BoxDecoration(boxShadow: <BoxShadow>[
-                      new BoxShadow (
+                      new BoxShadow(
                         color: const Color(0xcc000000),
                         offset: new Offset(-2.0, 2.0),
-                        blurRadius: widget.elevation*0.66,
+                        blurRadius: widget.elevation * 0.66,
                       ),
-                      new BoxShadow (
+                      new BoxShadow(
                         color: const Color(0x80000000),
                         offset: new Offset(0.0, 3.0),
                         blurRadius: widget.elevation,
