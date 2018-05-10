@@ -30,7 +30,7 @@ class ResideMenu extends StatefulWidget {
       {@required this.child,
       this.leftView,
       this.rightView,
-      this.direction: ScrollDirection.LEFT,
+      this.direction: ScrollDirection.BOTH,
       this.elevation: 12.0,
       this.controller,
       Key key})
@@ -44,7 +44,6 @@ class ResideMenu extends StatefulWidget {
 class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   double _startX = 0.0;
   double _width = 0.0;
-  double _offset = 99.0;
   //check if user scroll left,or is Right
   bool _isLeft = true;
   // this will controll ContainerAnimation
@@ -55,33 +54,30 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   void _onScrollMove(DragUpdateDetails details) {
-    _offset = (details.globalPosition.dx - _startX) / _width * 2.0;
-    if (widget.controller.isOpened) {
-      _offset = _isLeft?1.0+_offset:-1.0 +_offset;
-    }
-    if (_canScrollLeft() ) {
+    double offset = (details.globalPosition.dx - _startX) / _width * 2.0;
+
+    _offsetController.value+=offset;
+    _startX= details.globalPosition.dx;
+
+    if(_offsetController.value>0.0){
       _changeState(true);
-        _offsetController.value = _offset<=0.0?0.0:_offset;
     }
-    else if (_canScrollRight() ) {
+    else{
       _changeState(false);
-      _offsetController.value = _offset>=0.0?0.0:_offset;
     }
   }
 
   void _onScrollEnd(DragEndDetails details) {
-    if (_offset == 99.0) return;
-    if (_offset > 0.5 || _offset < -0.5) {
-      if (_canScrollLeft() && _offset > 0.5) {
-        widget.controller.openMenu(true);
-      } else if (_canScrollRight() && _offset < 0.5) {
-        widget.controller.openMenu(false);
-      }
-    } else {
+    if (_offsetController.value > 0.5 ) {
+      widget.controller.openMenu(true);
+    }
+    else if(_offsetController.value < -0.5){
+      widget.controller.openMenu(false);
+    }
+    else {
       widget.controller.closeMenu();
     }
     _startX = 0.0;
-    _offset = 99.0;
   }
 
   Widget _buildMenuView() {
@@ -98,22 +94,12 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     }
   }
 
-  void _changeState(bool left){
-    if(_isLeft!=left){
+  void _changeState(bool left) {
+    if (_isLeft != left) {
       setState(() {
         _isLeft = left;
       });
     }
-  }
-
-  bool _canScrollLeft() {
-    return (widget.direction == ScrollDirection.LEFT ||
-        widget.direction == ScrollDirection.BOTH);
-  }
-
-  bool _canScrollRight() {
-    return (widget.direction == ScrollDirection.RIGHT ||
-        widget.direction == ScrollDirection.BOTH);
   }
 
   @override
@@ -121,7 +107,9 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     _offsetController = new AnimationController(
-        lowerBound: -1.0,value: 0.0,
+        lowerBound: widget.direction==ScrollDirection.LEFT?0.0:-1.0,
+        upperBound:  widget.direction==ScrollDirection.RIGHT?0.0:1.0,
+        value: 0.0,
         vsync: this,
         duration: const Duration(milliseconds: 300));
     if (widget.controller == null) {
@@ -141,9 +129,10 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
         child: new Stack(
           children: <Widget>[
             new Container(
-              color: const Color(0xffff0000),
+              color: _isLeft?const Color(0xffff0000):const Color(0xffffff00),
               height: cons.biggest.height,
               child: _buildMenuView(),
+              alignment: _isLeft ? Alignment.topLeft : Alignment.topRight,
             ),
             new GestureDetector(
               onTap: () {
@@ -201,7 +190,7 @@ class _MenuTransition extends AnimatedWidget {
       final Matrix4 transform = new Matrix4.identity()
         ..scale(1.0 - 0.2 * menuOffset.value.abs(),
             1 - 0.2 * menuOffset.value.abs(), 1.0)
-        ..translate(menuOffset.value * 0.7 * width);
+        ..translate(menuOffset.value * 0.8 * width);
       ;
       return new Transform(
           transform: transform,
