@@ -66,20 +66,51 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildItem(msg){
-    return new Row(
-      children: <Widget>[const Icon(Icons.home,color: Colors.grey,),new Text(msg)],
+    return new InkResponse(
+      child: new Center(
+        child: new Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[const Icon(Icons.home,color: Colors.grey,),new Text(msg,style: new TextStyle(color:Colors.grey))],
+        ),
+      ),
+      highlightColor: Colors.green,
+      enableFeedback: true,
+      highlightShape: BoxShape.rectangle,
+      onTap: (){
+        print("tag");
+      },
     );
   }
 
   Widget buildLeft(){
-    return new ListView(
-      children: <Widget>[
-        buildItem("菜单一"),
-        buildItem("菜单二"),
-        buildItem("菜单三"),
-        buildItem("菜单四"),
-        buildItem("菜单五")
-      ],
+    return  new Container(
+      margin: new EdgeInsets.only(top: 80.0),
+      child: new Column(
+        children: <Widget>[
+          new CircleAvatar(
+
+            backgroundImage: new AssetImage('images/author.jpeg'),
+            radius: 40.0,
+          ),
+          new Text('Email:peng8350@gmail.com',style: new TextStyle(color:Colors.white),),
+          new Container(
+            width: 200.0,
+            child: new ListView(
+              physics: new NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemExtent: 50.0,
+              children: <Widget>[
+                buildItem("菜单一"),
+                buildItem("菜单二"),
+                buildItem("菜单三"),
+                buildItem("菜单四"),
+                buildItem("菜单五")
+              ],
+            ),
+
+          )
+        ],
+      ),
     );
   }
 
@@ -93,6 +124,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return new Material(
       child: new ResideMenu(
+        decoration: new BoxDecoration(
+          image: new DecorationImage(image: new AssetImage("images/menu_background.png"),fit: BoxFit.cover)
+        ),
         direction: ScrollDirection.BOTH,
         leftView: buildLeft(),
           rightView: buildLeft(),
