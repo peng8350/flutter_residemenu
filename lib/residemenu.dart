@@ -22,12 +22,15 @@ class ResideMenu extends StatefulWidget {
 
   final Widget body;
 
+  final double elevation;
+
   MenuController controller;
 
   ResideMenu(
       {@required this.child,
       this.body,
       this.direction,
+        this.elevation:12.0,
       this.controller,
       Key key})
       : assert(child != null),
@@ -106,7 +109,22 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                 widget.controller.closeMenu();
               },
               child: new _MenuTransition(
-                  child: widget.child, menuOffset: _offsetController),
+                  child: new Container(
+                    child: widget.child,
+                    decoration: new BoxDecoration(boxShadow: <BoxShadow>[
+                      new BoxShadow (
+                        color: const Color(0xcc000000),
+                        offset: new Offset(-2.0, 2.0),
+                        blurRadius: widget.elevation*0.66,
+                      ),
+                      new BoxShadow (
+                        color: const Color(0x80000000),
+                        offset: new Offset(0.0, 3.0),
+                        blurRadius: widget.elevation,
+                      ),
+                    ]),
+                  ),
+                  menuOffset: _offsetController),
             )
           ],
         ),
@@ -156,8 +174,7 @@ class MenuController {
   MenuListener listener;
   bool _isOpen = false;
 
-
-  MenuController({this.listener}):super();
+  MenuController({this.listener}) : super();
 
   void openMenu() {
     _animation.animateTo(1.0);
