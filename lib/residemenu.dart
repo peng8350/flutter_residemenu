@@ -16,16 +16,17 @@ typedef void OnOffsetChange(double offset);
 enum ScrollDirection { LEFT, RIGHT, BOTH }
 
 class ResideMenu extends StatefulWidget {
+  // your content View
   final Widget child;
 
   final ScrollDirection direction;
-
+  //left or right Menu View
   final Widget leftView, rightView;
-
+  //shadow elevation
   final double elevation;
-
+  // it will control the menu Action,such as openMenu,closeMenu
   MenuController controller;
-
+  // used to set bottom bg and color
   final BoxDecoration decoration;
 
   ResideMenu(
@@ -45,7 +46,9 @@ class ResideMenu extends StatefulWidget {
 }
 
 class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
-  double _startX = 0.0;
+  // the last move point
+  double _lastRawX = 0.0;
+  //determine width
   double _width = 0.0;
   //check if user scroll left,or is Right
   bool _isLeft = true;
@@ -53,20 +56,13 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   AnimationController _offsetController;
 
   void _onScrollStart(DragStartDetails details) {
-    _startX = details.globalPosition.dx;
+    _lastRawX = details.globalPosition.dx;
   }
 
   void _onScrollMove(DragUpdateDetails details) {
-    double offset = (details.globalPosition.dx - _startX) / _width * 2.0;
-
+    double offset = (details.globalPosition.dx - _lastRawX) / _width * 2.0;
     _offsetController.value += offset;
-    _startX = details.globalPosition.dx;
-
-    if (_offsetController.value > 0.0) {
-      _changeState(true);
-    } else {
-      _changeState(false);
-    }
+    _lastRawX = details.globalPosition.dx;
   }
 
   void _onScrollEnd(DragEndDetails details) {
@@ -77,7 +73,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     } else {
       widget.controller.closeMenu();
     }
-    _startX = 0.0;
+    _lastRawX = 0.0;
   }
 
   void _changeState(bool left) {
@@ -91,15 +87,19 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   @override
   void initState() {
     // TODO: implement initState
-
     _offsetController = new AnimationController(
         lowerBound: widget.direction == ScrollDirection.LEFT ? 0.0 : -1.0,
         upperBound: widget.direction == ScrollDirection.RIGHT ? 0.0 : 1.0,
         value: 0.0,
         vsync: this,
-        duration: const Duration(milliseconds: 300));
-    print(_offsetController.lowerBound);
-    print(_offsetController.upperBound);
+        duration: const Duration(milliseconds: 300))
+      ..addListener(() {
+        if (_offsetController.value > 0.0) {
+          _changeState(true);
+        } else {
+          _changeState(false);
+        }
+      });
     if (widget.controller == null) {
       widget.controller = new MenuController();
     }
@@ -119,11 +119,11 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
           children: <Widget>[
             new Container(
               decoration: widget.decoration,
-              height: cons.biggest.height,
+            ),
+            new Container(
               child: new Align(
                 child: _isLeft ? widget.leftView : widget.rightView,
-                alignment:
-                    _isLeft ? Alignment.centerLeft : Alignment.centerRight,
+                alignment: _isLeft ? Alignment.topLeft : Alignment.topRight,
               ),
             ),
             new GestureDetector(
@@ -132,17 +132,16 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
               },
               child: new _MenuTransition(
                   child: new Container(
-
                     child: widget.child,
                     decoration: new BoxDecoration(boxShadow: <BoxShadow>[
                       new BoxShadow(
                         color: const Color(0xcc000000),
-                        offset: new Offset(-2.0, 2.0),
+                        offset: const Offset(-2.0, 2.0),
                         blurRadius: widget.elevation * 0.66,
                       ),
                       new BoxShadow(
                         color: const Color(0x80000000),
-                        offset: new Offset(0.0, 3.0),
+                        offset: const Offset(0.0, 3.0),
                         blurRadius: widget.elevation,
                       ),
                     ]),
@@ -181,8 +180,8 @@ class _MenuTransition extends AnimatedWidget {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
       final Matrix4 transform = new Matrix4.identity()
-        ..scale(1.0 - 0.2 * menuOffset.value.abs(),
-            1 - 0.2 * menuOffset.value.abs(), 1.0)
+        ..scale(1.0 - 0.25 * menuOffset.value.abs(),
+            1 - 0.25 * menuOffset.value.abs(), 1.0)
         ..translate(menuOffset.value * 0.8 * width);
       ;
       return new Transform(
