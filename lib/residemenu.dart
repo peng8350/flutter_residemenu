@@ -9,18 +9,18 @@ library residemenu;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-typedef void OnOpen();
+typedef void OnOpen(bool isLeft);
 typedef void OnClose();
 typedef void OnOffsetChange(double offset);
 
-enum ScrollDirection { left, right,both }
+enum ScrollDirection { LEFT, RIGHT, BOTH }
 
 class ResideMenu extends StatefulWidget {
   final Widget child;
 
   final ScrollDirection direction;
 
-  final Widget leftView,rightView;
+  final Widget leftView, rightView;
 
   final double elevation;
 
@@ -29,8 +29,8 @@ class ResideMenu extends StatefulWidget {
   ResideMenu(
       {@required this.child,
       this.leftView,
-        this.rightView,
-      this.direction,
+      this.rightView,
+      this.direction: ScrollDirection.LEFT,
       this.elevation: 12.0,
       this.controller,
       Key key})
@@ -57,33 +57,40 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   void _onScrollMove(DragUpdateDetails details) {
     _offset = (details.globalPosition.dx - _startX) / _width * 2.0;
     if (widget.controller.isOpened) {
-      _offset = 1.0 + _offset;
+      _offset = _isLeft?1.0+_offset:-1.0 +_offset;
     }
-    if (_offset >= 0.05) {
-      _offsetController.value = _offset;
+    if (_canScrollLeft() ) {
+      _changeState(true);
+        _offsetController.value = _offset<=0.0?0.0:_offset;
+    }
+    else if (_canScrollRight() ) {
+      _changeState(false);
+      _offsetController.value = _offset>=0.0?0.0:_offset;
     }
   }
 
   void _onScrollEnd(DragEndDetails details) {
     if (_offset == 99.0) return;
-    if (_offset > 0.5) {
-      widget.controller.openMenu();
+    if (_offset > 0.5 || _offset < -0.5) {
+      if (_canScrollLeft() && _offset > 0.5) {
+        widget.controller.openMenu(true);
+      } else if (_canScrollRight() && _offset < 0.5) {
+        widget.controller.openMenu(false);
+      }
     } else {
-      print("qqq");
       widget.controller.closeMenu();
     }
     _startX = 0.0;
     _offset = 99.0;
   }
 
-  Widget buildMenuView(){
-    if(_isLeft){
+  Widget _buildMenuView() {
+    if (_isLeft) {
       return new Align(
         alignment: Alignment.topLeft,
         child: widget.leftView,
       );
-    }
-    else{
+    } else {
       return new Align(
         alignment: Alignment.topLeft,
         child: widget.rightView,
@@ -91,12 +98,32 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     }
   }
 
+  void _changeState(bool left){
+    if(_isLeft!=left){
+      setState(() {
+        _isLeft = left;
+      });
+    }
+  }
+
+  bool _canScrollLeft() {
+    return (widget.direction == ScrollDirection.LEFT ||
+        widget.direction == ScrollDirection.BOTH);
+  }
+
+  bool _canScrollRight() {
+    return (widget.direction == ScrollDirection.RIGHT ||
+        widget.direction == ScrollDirection.BOTH);
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _offsetController = new AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 300));
+        lowerBound: -1.0,value: 0.0,
+        vsync: this,
+        duration: const Duration(milliseconds: 300));
     if (widget.controller == null) {
       widget.controller = new MenuController();
     }
@@ -116,7 +143,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
             new Container(
               color: const Color(0xffff0000),
               height: cons.biggest.height,
-              child: buildMenuView(),
+              child: _buildMenuView(),
             ),
             new GestureDetector(
               onTap: () {
@@ -172,13 +199,14 @@ class _MenuTransition extends AnimatedWidget {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
       final Matrix4 transform = new Matrix4.identity()
-        ..scale(1.0 - 0.2 * menuOffset.value, 1 - 0.2 * menuOffset.value, 1.0)
+        ..scale(1.0 - 0.2 * menuOffset.value.abs(),
+            1 - 0.2 * menuOffset.value.abs(), 1.0)
         ..translate(menuOffset.value * 0.7 * width);
       ;
       return new Transform(
           transform: transform,
           child: child,
-          origin: new Offset(width, height / 2));
+          origin: new Offset(width / 2, height / 2));
     });
   }
 }
@@ -190,12 +218,12 @@ class MenuController {
 
   MenuController({this.listener}) : super();
 
-  void openMenu() {
-    _animation.animateTo(1.0);
+  void openMenu(left) {
+    _animation.animateTo(left ? 1.0 : -1.0);
     if (!isOpened) {
       _isOpen = true;
       if (listener != null) {
-        listener.onOpen();
+        listener.onOpen(left);
       }
     }
   }

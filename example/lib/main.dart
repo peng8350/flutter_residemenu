@@ -105,7 +105,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 child: new Text('打开'),
                 onPressed: (){
-                  _menuController.openMenu();
                 },
               ),
               new RaisedButton(
