@@ -22,15 +22,12 @@ class ResideMenu extends StatefulWidget {
 
   final Widget body;
 
-  final MenuListener listener;
-
   MenuController controller;
 
   ResideMenu(
       {@required this.child,
       this.body,
       this.direction,
-      this.listener,
       this.controller,
       Key key})
       : assert(child != null),
@@ -44,24 +41,38 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   double _startX = 0.0;
   double _width = 0.0;
   bool _isDraging = false;
+  double _offset = 0.0;
 
   AnimationController _offsetController;
 
   void _onScrollStart(DragStartDetails details) {
     _startX = details.globalPosition.dx;
-    _isDraging = true;
   }
 
   void _onScrollMove(DragUpdateDetails details) {
-    double offset = (details.globalPosition.dx - _startX)/_width*2.0;
-    if (offset <= 1.0 && offset >=0.0) {
-      _offsetController.value = offset;
+    _offset = (details.globalPosition.dx - _startX) / _width * 2.0;
+    if (_offset >= 0.05) {
+      _isDraging = true;
+    }
+    if (widget.controller.isOpened) {
+      _offset = 1.0 + _offset;
+    }
+    if (_offset >= 0.05) {
+      _offsetController.value = _offset;
     }
   }
 
   void _onScrollEnd(DragEndDetails details) {
+    print(_offset);
+    if (!_isDraging) return;
+    if (_offset > 0.5) {
+      widget.controller.openMenu();
+    } else {
+      widget.controller.closeMenu();
+    }
     _startX = 0.0;
     _isDraging = false;
+    _offset = 0.0;
   }
 
   @override
@@ -69,8 +80,8 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     _offsetController = new AnimationController(
-         vsync: this, duration: const Duration(milliseconds: 300));
-    if(widget.controller==null){
+        vsync: this, duration: const Duration(milliseconds: 300));
+    if (widget.controller == null) {
       widget.controller = new MenuController();
     }
     widget.controller._bind(_offsetController);
@@ -91,7 +102,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
               height: cons.biggest.height,
             ),
             new GestureDetector(
-              onTap: (){
+              onTap: () {
                 widget.controller.closeMenu();
               },
               child: new _MenuTransition(
@@ -112,54 +123,6 @@ class MenuListener {
   MenuListener({this.onClose, this.onOpen, this.onOffsetChange});
 }
 
-///// Creates a size transition.
-/////
-///// The [sizeFactor] argument must not be null. The [axis] argument defaults
-///// to [Axis.vertical]. The [axisAlignment] defaults to 0.0, which centers the
-///// child along the main axis during the transition.
-//const SizeTransition({
-//Key key,
-//this.axis: Axis.vertical,
-//@required Animation<double> sizeFactor,
-//this.axisAlignment: 0.0,
-//this.child,
-//}) : assert(axis != null),
-//super(key: key, listenable: sizeFactor);
-//
-///// [Axis.horizontal] if [sizeFactor] modifies the width, otherwise [Axis.vertical].
-//final Axis axis;
-//
-///// The animation that controls the (clipped) size of the child. If the current value
-///// of sizeFactor is v then the width or height of the widget will be its intrinsic
-///// width or height multiplied by v.
-//Animation<double> get sizeFactor => listenable;
-//
-///// How to align the child along the axis that sizeFactor is modifying.
-//final double axisAlignment;
-//
-///// The widget below this widget in the tree.
-/////
-///// {@macro flutter.widgets.child}
-//final Widget child;
-//
-//@override
-//Widget build(BuildContext context) {
-//  AlignmentDirectional alignment;
-//  if (axis == Axis.vertical)
-//    alignment = new AlignmentDirectional(-1.0, axisAlignment);
-//  else
-//    alignment = new AlignmentDirectional(axisAlignment, -1.0);
-//  return new ClipRect(
-//      child: new Align(
-//        alignment: alignment,
-//        heightFactor: axis == Axis.vertical ? math.max(sizeFactor.value, 0.0) : null,
-//        widthFactor: axis == Axis.horizontal ? math.max(sizeFactor.value, 0.0) : null,
-//        child: child,
-//      )
-//  );
-//}
-//}
-
 class _MenuTransition extends AnimatedWidget {
   final Widget child;
 
@@ -178,7 +141,7 @@ class _MenuTransition extends AnimatedWidget {
       double height = cons.biggest.height;
       final Matrix4 transform = new Matrix4.identity()
         ..scale(1.0 - 0.2 * menuOffset.value, 1 - 0.2 * menuOffset.value, 1.0)
-        ..translate(menuOffset.value*0.7*width);
+        ..translate(menuOffset.value * 0.7 * width);
       ;
       return new Transform(
           transform: transform,
@@ -190,27 +153,42 @@ class _MenuTransition extends AnimatedWidget {
 
 class MenuController {
   AnimationController _animation;
+  MenuListener listener;
+  bool _isOpen = false;
 
+
+  MenuController({this.listener}):super();
 
   void openMenu() {
-    if(isClose)
     _animation.animateTo(1.0);
+    if (!isOpened) {
+      _isOpen = true;
+      if (listener != null) {
+        listener.onOpen();
+      }
+    }
   }
 
   void closeMenu() {
-    if(isOpen)
     _animation.animateTo(0.0);
+    if (isOpened) {
+      _isOpen = false;
+      if (listener != null) {
+        listener.onClose();
+      }
+    }
   }
 
-  void _bind(AnimationController animation){
+  void _bind(AnimationController animation) {
     _animation = animation;
+    _animation.addListener(() {
+      if (listener != null) {
+        listener.onOffsetChange(_animation.value);
+      }
+    });
   }
 
   double get offset => _animation.value;
 
-  bool get isOpen => _animation.value==1.0;
-
-  bool get isClose => _animation.value ==0.0;
-
-
+  bool get isOpened => _isOpen;
 }
