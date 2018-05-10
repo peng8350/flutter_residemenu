@@ -77,8 +77,7 @@ class _MainActivityState extends State<MainActivity> {
             image: new DecorationImage(
                 image: new AssetImage("images/menu_background.png"),
                 fit: BoxFit.cover)),
-        direction: ScrollDirection.BOTH,
-        leftView: buildLeft(),
+        direction: ScrollDirection.RIGHT,
         rightView: buildLeft(),
         controller: _menuController,
         child: new Scaffold(
@@ -99,14 +98,14 @@ class _MainActivityState extends State<MainActivity> {
           ),
           appBar: new AppBar(
             leading: new GestureDetector(
-              child: const Icon(Icons.info),
+              child: const Icon(Icons.menu),
               onTap: () {
                 _menuController.openMenu(true);
               },
             ),
             actions: <Widget>[
               new GestureDetector(
-                child: const Icon(Icons.info),
+                child: const Icon(Icons.menu),
                 onTap: () {
                   _menuController.openMenu(false);
                 },
