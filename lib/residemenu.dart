@@ -113,6 +113,14 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _menuController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return new LayoutBuilder(builder: (context, cons) {
       _width = cons.biggest.width;
