@@ -77,8 +77,9 @@ class _MainActivityState extends State<MainActivity> {
             image: new DecorationImage(
                 image: new AssetImage("images/menu_background.png"),
                 fit: BoxFit.cover)),
-        direction: ScrollDirection.RIGHT,
+        direction: ScrollDirection.BOTH,
         rightView: buildLeft(),
+        leftView: buildLeft(),
         controller: _menuController,
         child: new Scaffold(
           body: new Column(

@@ -53,7 +53,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   //check if user scroll left,or is Right
   bool _isLeft = true;
   // this will controll ContainerAnimation
-  AnimationController _offsetController;
+  AnimationController _contentController, _menuController;
 
   void _onScrollStart(DragStartDetails details) {
     _lastRawX = details.globalPosition.dx;
@@ -61,14 +61,14 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
 
   void _onScrollMove(DragUpdateDetails details) {
     double offset = (details.globalPosition.dx - _lastRawX) / _width * 2.0;
-    _offsetController.value += offset;
+    _contentController.value += offset;
     _lastRawX = details.globalPosition.dx;
   }
 
   void _onScrollEnd(DragEndDetails details) {
-    if (_offsetController.value > 0.5) {
+    if (_contentController.value > 0.5) {
       widget.controller.openMenu(true);
-    } else if (_offsetController.value < -0.5) {
+    } else if (_contentController.value < -0.5) {
       widget.controller.openMenu(false);
     } else {
       widget.controller.closeMenu();
@@ -87,23 +87,28 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   @override
   void initState() {
     // TODO: implement initState
-    _offsetController = new AnimationController(
+    _menuController =
+        new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0);
+    _contentController = new AnimationController(
         lowerBound: widget.direction == ScrollDirection.LEFT ? 0.0 : -1.0,
         upperBound: widget.direction == ScrollDirection.RIGHT ? 0.0 : 1.0,
         value: 0.0,
         vsync: this,
         duration: const Duration(milliseconds: 300))
       ..addListener(() {
-        if (_offsetController.value > 0.0) {
+        if (_contentController.value > 0.0) {
           _changeState(true);
         } else {
           _changeState(false);
         }
+      })
+      ..addListener(() {
+        _menuController.value = 2.0 - _contentController.value.abs();
       });
     if (widget.controller == null) {
       widget.controller = new MenuController();
     }
-    widget.controller._bind(_offsetController);
+    widget.controller._bind(_contentController);
     super.initState();
   }
 
@@ -116,21 +121,26 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
         onHorizontalDragUpdate: _onScrollMove,
         onHorizontalDragEnd: _onScrollEnd,
         child: new Stack(
+
           children: <Widget>[
             new Container(
               decoration: widget.decoration,
             ),
-            new Container(
-              child: new Align(
-                child: _isLeft ? widget.leftView : widget.rightView,
-                alignment: _isLeft ? Alignment.topLeft : Alignment.topRight,
+            new _MenuTransition(
+              valueControll: _menuController,
+              child: new Container(
+
+                child: new Align(
+                  child: _isLeft ? widget.leftView : widget.rightView,
+                  alignment: _isLeft ? Alignment.topLeft : Alignment.topRight,
+                ),
               ),
             ),
             new GestureDetector(
               onTap: () {
                 widget.controller.closeMenu();
               },
-              child: new _MenuTransition(
+              child: new _ContentTransition(
                   child: new Container(
                     child: widget.child,
                     decoration: new BoxDecoration(boxShadow: <BoxShadow>[
@@ -146,7 +156,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                       ),
                     ]),
                   ),
-                  menuOffset: _offsetController),
+                  menuOffset: _contentController),
             )
           ],
         ),
@@ -167,6 +177,35 @@ class _MenuTransition extends AnimatedWidget {
   final Widget child;
 
   _MenuTransition(
+      {@required this.child, @required Animation<double> valueControll, Key key})
+      : super(key: key, listenable: valueControll);
+
+  Animation<double> get valueControll => listenable;
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+
+    return new LayoutBuilder(builder: (context, cons) {
+      double width = cons.biggest.width;
+      double height = cons.biggest.height;
+      final Matrix4 transform = new Matrix4.identity()
+        ..scale(valueControll.value.abs(), valueControll.value.abs(), 1.0);
+      return new Opacity(
+        opacity: 2.0-valueControll.value,
+        child: new Transform(
+            transform: transform,
+            child: child,
+            origin: new Offset(width / 2, height / 2)),
+      );
+    });
+  }
+}
+
+class _ContentTransition extends AnimatedWidget {
+  final Widget child;
+
+  _ContentTransition(
       {@required this.child, @required Animation<double> menuOffset, Key key})
       : super(key: key, listenable: menuOffset);
 
