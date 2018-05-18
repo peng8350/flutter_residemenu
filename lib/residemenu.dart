@@ -35,11 +35,29 @@ class ResideMenu extends StatefulWidget {
 
   final OnOffsetChange onOffsetChange;
 
-  ResideMenu(
+  ResideMenu.scafford(
+      {@required this.child,
+      Widget leftBuilder,
+      MenuScaffold leftScaffold,
+      MenuScaffold rightScaffold,
+      this.decoration: const BoxDecoration(),
+      this.direction: ScrollDirection.LEFT,
+      this.elevation: 12.0,
+      this.onOpen,
+      this.onClose,
+      this.onOffsetChange,
+      this.controller,
+      Key key})
+      : assert(child != null),
+        leftView = leftScaffold,
+        rightView = rightScaffold,
+        super(key: key);
+
+  ResideMenu.custom(
       {@required this.child,
       this.leftView,
       this.rightView,
-      this.decoration: const BoxDecoration(),
+      this.decoration: const BoxDecoration(color: const Color(0xff0000)),
       this.direction: ScrollDirection.LEFT,
       this.elevation: 12.0,
       this.onOpen,
@@ -94,13 +112,13 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   void _init() {
-    if (widget.controller == null) widget.controller = new MenuController(vsync:this);
     _menuController =
         new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0);
-
-    widget.controller = new MenuController(
+    if (widget.controller == null)
+      widget.controller = new MenuController(
         vsync: this,
-        )
+      );
+    widget.controller
       ..addListener(() {
         if (widget.controller.value > 0.0) {
           _changeState(true);
@@ -117,15 +135,15 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           if (widget.controller.isOpenLeft) {
-            if(widget.onOpen!=null){
+            if (widget.onOpen != null) {
               widget.onOpen(true);
             }
           } else if (widget.controller.isOpenRight) {
-            if(widget.onOpen!=null){
+            if (widget.onOpen != null) {
               widget.onOpen(false);
             }
           } else {
-            if(widget.onClose!=null){
+            if (widget.onClose != null) {
               widget.onClose();
             }
           }
@@ -170,11 +188,9 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
             ),
             new _MenuTransition(
               valueControll: _menuController,
-              child: new Container(
-                child: new Align(
-                  child: _isLeft ? widget.leftView : widget.rightView,
-                  alignment: _isLeft ? Alignment.topLeft : Alignment.topRight,
-                ),
+              child:  new Container(
+                margin: new EdgeInsets.only(left: (!_isLeft?cons.biggest.width*0.3:0.0),right:(_isLeft?cons.biggest.width*0.3:0.0)),
+                 child: _isLeft ? widget.leftView : widget.rightView
               ),
             ),
             new GestureDetector(
@@ -203,6 +219,54 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
         ),
       );
     });
+  }
+}
+
+class ResideMenuItem extends StatelessWidget {
+  final String title;
+
+  final TextStyle titleStyle;
+
+  final Widget icon, right;
+
+  final double height;
+
+  final double midSpacing, leftSpacing, rightSpacing;
+
+
+  const ResideMenuItem(
+      {Key key,
+      this.title: "菜单物品",
+      this.titleStyle: const TextStyle(
+          inherit: true, color: const Color(0xffdddddd), fontSize: 15.0),
+      this.icon: const Text(""),
+      this.right: const Text(""),
+      this.height: 50.0,
+      this.leftSpacing: 40.0,
+      this.rightSpacing: 50.0,
+      this.midSpacing: 30.0});
+
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return new Container(
+        height: 40.0,
+        alignment: Alignment.topRight,
+        child: new Row(
+          children: <Widget>[
+            new Container(width: leftSpacing),
+            icon,
+            new Container(
+              width: midSpacing,
+            ),
+            new Text(title, style: titleStyle),
+            new Container(
+              width: rightSpacing,
+            ),
+            right
+          ],
+        ));
   }
 }
 
@@ -268,19 +332,62 @@ class _ContentTransition extends AnimatedWidget {
 
 class MenuController extends AnimationController {
   MenuController({TickerProvider vsync})
-      : super(vsync:vsync,lowerBound: -1.0, duration: const Duration(milliseconds: 300),value:0.0);
+      : super(
+            vsync: vsync,
+            lowerBound: -1.0,
+            duration: const Duration(milliseconds: 300),
+            value: 0.0);
 
-  void openMenu(left) {
+  void openMenu(bool left) {
     animateTo(left ? 1.0 : -1.0);
+//    animateTo(left ? 1.0 : -1.0);
   }
 
   void closeMenu() {
     animateTo(0.0);
   }
 
-  bool get isOpenLeft => value == -1.0;
+  bool get isOpenLeft => value == 1.0;
 
-  bool get isOpenRight => value == 1.0;
+  bool get isOpenRight => value == -1.0;
 
   bool get isClose => value == 0.0;
+}
+
+class MenuScaffold extends StatelessWidget {
+  final List<Widget> children;
+  final Widget header;
+  final Widget footer;
+  final double itemExtent;
+  final double topMargin;
+
+  MenuScaffold(
+      {Key key,
+      @required this.children,
+      this.topMargin:100.0,
+      Widget header,
+      Widget footer,
+      this.itemExtent: 40.0})
+      : assert(children != null),
+        header = header ?? new Container(height: 20.0),
+        footer = footer ?? new Container(height: 20.0),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return new Container(
+      padding: new EdgeInsets.only(top:this.topMargin),
+      child: new Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          header,
+          new Column(
+            children: children,
+          ),
+          footer
+        ],
+      ),
+    );
+  }
 }

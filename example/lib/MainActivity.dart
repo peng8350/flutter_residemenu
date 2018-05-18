@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:residemenu/residemenu.dart';
 
-
-class MainActivity extends StatefulWidget{
-
-
+class MainActivity extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
@@ -12,60 +9,21 @@ class MainActivity extends StatefulWidget{
   }
 }
 
-class _MainActivityState extends State<MainActivity> with TickerProviderStateMixin {
+class _MainActivityState extends State<MainActivity>
+    with TickerProviderStateMixin {
   MenuController _menuController;
 
   Widget buildItem(msg) {
     return new Material(
       color: Colors.transparent,
       child: new InkWell(
-        child: new Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            const Icon(
-              Icons.home,
-              color: Colors.white70,
-            ),
-            new Text(msg, style: new TextStyle(color: Colors.white70))
-          ],
-        )
-        ,
+        child: const ResideMenuItem(
+            title: "菜单一", icon: const Icon(Icons.home, color: Colors.grey),right: const Icon(Icons.arrow_forward,color:Colors.grey),),
         onTap: () {
-          Scaffold.of(context).showSnackBar(new SnackBar(content: new Text('你点击了$msg')));
+          Scaffold
+              .of(context)
+              .showSnackBar(new SnackBar(content: new Text('你点击了$msg')));
         },
-      ),
-    );
-  }
-
-  Widget buildLeft() {
-    return new Container(
-      margin: new EdgeInsets.only(top: 80.0),
-      child: new Column(
-        children: <Widget>[
-          new CircleAvatar(
-            backgroundImage: new AssetImage('images/author.jpeg'),
-            radius: 40.0,
-          ),
-          new Text(
-            'Email:peng8350@gmail.com',
-            style: new TextStyle(color: Colors.white),
-          ),
-          new Container(
-            width: 200.0,
-            child: new ListView(
-              physics: new NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemExtent: 50.0,
-              children: <Widget>[
-                buildItem("菜单一"),
-                buildItem("菜单二"),
-                buildItem("菜单三"),
-                buildItem("菜单四"),
-                buildItem("菜单五")
-              ],
-            ),
-          )
-        ],
       ),
     );
   }
@@ -73,77 +31,107 @@ class _MainActivityState extends State<MainActivity> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return new ResideMenu(
-        decoration: new BoxDecoration(
-            image: new DecorationImage(
-                image: new AssetImage("images/menu_background.png"),
-                fit: BoxFit.cover)),
-        direction: ScrollDirection.BOTH,
-        rightView: buildLeft(),
-        leftView: buildLeft(),
-        child: new Scaffold(
-          body: new Column(
+    return new ResideMenu.scafford(
+      decoration: new BoxDecoration(
+          image: new DecorationImage(
+              image: new AssetImage("images/menu_background.png"),
+              fit: BoxFit.cover)),
+      direction: ScrollDirection.BOTH,
+      controller: _menuController,
+      leftScaffold: new MenuScaffold(
+        header: new ConstrainedBox(
 
-            children: <Widget>[
-              new Text('水平滚动组件测试'),
-              new Container(
-                height: 100.0,
-                child: new ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  itemCount: 30,
-                  itemBuilder: (context,index) => new Image.asset("images/menu_background.png",width: 400.0,height: 100.0,fit: BoxFit.cover),
-                ),
-              ),
-              new ListView(
-                shrinkWrap: true,
-                children: <Widget>[new Text('sd'),new Text('sd'),new Text('sd'),new Text('sd'),new Text('sd')],
-                itemExtent: 50.0,
-              )
-            ],
-          ),
-          appBar: new AppBar(
-            leading: new GestureDetector(
-              child: const Icon(Icons.menu),
-              onTap: () {
-                _menuController.openMenu(true);
-              },
-            ),
-            actions: <Widget>[
-              new GestureDetector(
-                child: const Icon(Icons.menu),
-                onTap: () {
-                  _menuController.openMenu(false);
-                },
-              )
-            ],
-            // Here we take the value from the MyHomePage object that was created by
-            // the App.build method, and use it to set our appbar title.
-            title: new Text('ResideMenu'),
+          constraints: new BoxConstraints(maxHeight: 80.0, maxWidth: 80.0),
+          child: new CircleAvatar(
+
+            backgroundImage: new AssetImage('images/author.jpeg'),
+            radius: 40.0,
           ),
         ),
-      onClose: (){
-
-          print("closed");
+        children: <Widget>[
+          buildItem("菜单一"),
+          buildItem("菜单二"),
+          buildItem("菜单三"),
+          buildItem("菜单四"),
+          buildItem("菜单五")
+        ],
+      ),
+      rightScaffold: new MenuScaffold(
+        header: new CircleAvatar(
+          backgroundImage: new AssetImage('images/author.jpeg'),
+          radius: 40.0,
+        ),
+        children: <Widget>[
+          buildItem("菜单一"),
+          buildItem("菜单二"),
+          buildItem("菜单三"),
+          buildItem("菜单四"),
+          buildItem("菜单五")
+        ],
+      ),
+      child: new Scaffold(
+        body: new Column(
+          children: <Widget>[
+            new Text('水平滚动组件测试'),
+            new Container(
+              height: 100.0,
+              child: new ListView.builder(
+                scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                itemCount: 30,
+                itemBuilder: (context, index) => new Image.asset(
+                    "images/menu_background.png",
+                    width: 400.0,
+                    height: 100.0,
+                    fit: BoxFit.cover),
+              ),
+            ),
+            new ListView(
+              shrinkWrap: true,
+              children: <Widget>[
+                new Text('sd'),
+                new Text('sd'),
+                new Text('sd'),
+                new Text('sd'),
+                new Text('sd')
+              ],
+              itemExtent: 50.0,
+            )
+          ],
+        ),
+        appBar: new AppBar(
+          leading: new GestureDetector(
+            child: const Icon(Icons.menu),
+            onTap: () {
+              _menuController.openMenu(true);
+            },
+          ),
+          actions: <Widget>[
+            new GestureDetector(
+              child: const Icon(Icons.menu),
+              onTap: () {
+                _menuController.openMenu(false);
+              },
+            )
+          ],
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: new Text('ResideMenu'),
+        ),
+      ),
+      onClose: () {
+        print("closed");
       },
-      onOpen: (left){
-          if(left){
-            print("openLeft");
-            setState(() {
-
-            });
-          }
-          else{
-            print("openRight");
-          }
+      onOpen: (left) {
+        if (left) {
+          print("openLeft");
+        } else {
+          print("openRight");
+        }
       },
-      onOffsetChange: (offset){
-      },
-
+      onOffsetChange: (offset) {},
     );
   }
-
-
 
   @override
   void initState() {
