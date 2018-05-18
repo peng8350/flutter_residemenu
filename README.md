@@ -3,13 +3,11 @@
 Residemenu for flutter,android and ios supported
 
 ## Screenshot
-Android:<br>
-![android](https://github.com/peng8350/flutter_residemenu/blob/master/arts/android.gif)<br>
-iOS:<br>
-![ios](https://github.com/peng8350/flutter_residemenu/blob/master/arts/ios.gif)
+
+![ios](https://github.com/peng8350/flutter_residemenu/blob/master/arts/residemenu.gif)
 
 ## Usage
-1.declare in pubspec.yaml
+declare in pubspec.yaml
 
 ```
 
@@ -17,35 +15,15 @@ dependencies:
   ...
 
   residemenu:
-    ^1.1.0
+    ^1.1.5
 
 ```
 
-2.create MenuController to OpenMenu,closeMenu,know if menu is Open,listen the menu callback.
 
-```
+build() method to create my ResideMenu Widget,child is your contentView(if you use MaterialApp,mostly Scaffold),
+about leftScafford,rightScafford,they are used to build your MenuView According to the layout of the public.
+the more you can see the demo find how to use.If you do not meet your needs, you can use the ResideMenu.custom method.
 
-MenuController _menuController;
-
-void initState(){
-   _menuController = new MenuController(
-         listener: new MenuListener(
-             onClose: (){
-
-             }
-             ,
-             onOpen: (bool left){
-
-             }
-
-      )
-   );
-
-}
-
-```
-
-3.build() method to create my ResideMenu Widget,child is your contentView(if you use MaterialApp,mostly Scaffold)
 
 ```
 
@@ -55,12 +33,15 @@ void initState(){
                 image: new DecorationImage(
                     image: new AssetImage("images/menu_background.png"),
                     fit: BoxFit.cover)),
-            leftView: buildLeft(),
+            leftScafford: ...,
+            rightScafford: ...,
             controller: _menuController,
             child: ...
             )
 
 ```
+
+
 
 ## Table
 

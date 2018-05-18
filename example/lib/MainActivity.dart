@@ -120,16 +120,19 @@ class _MainActivityState extends State<MainActivity>
         ),
       ),
       onClose: () {
-        print("closed");
+//        print("closed");
       },
       onOpen: (left) {
-        if (left) {
-          print("openLeft");
-        } else {
-          print("openRight");
-        }
+        setState(() {
+
+        });
       },
-      onOffsetChange: (offset) {},
+      onOffsetChange: (offset) {
+
+        setState(() {
+
+        });
+      },
     );
   }
 
