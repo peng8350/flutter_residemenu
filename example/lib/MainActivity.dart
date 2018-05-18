@@ -72,6 +72,7 @@ class _MainActivityState extends State<MainActivity> {
 
   @override
   Widget build(BuildContext context) {
+//    MenuController controller=  new MenuController();
     return new ResideMenu(
         decoration: new BoxDecoration(
             image: new DecorationImage(
@@ -80,7 +81,6 @@ class _MainActivityState extends State<MainActivity> {
         direction: ScrollDirection.BOTH,
         rightView: buildLeft(),
         leftView: buildLeft(),
-        controller: _menuController,
         child: new Scaffold(
           body: new Column(
 
@@ -94,6 +94,11 @@ class _MainActivityState extends State<MainActivity> {
                   itemCount: 30,
                   itemBuilder: (context,index) => new Image.asset("images/menu_background.png",width: 400.0,height: 100.0,fit: BoxFit.cover),
                 ),
+              ),
+              new ListView(
+                shrinkWrap: true,
+                children: <Widget>[new Text('sd'),new Text('sd'),new Text('sd'),new Text('sd'),new Text('sd')],
+                itemExtent: 50.0,
               )
             ],
           ),
@@ -116,7 +121,26 @@ class _MainActivityState extends State<MainActivity> {
             // the App.build method, and use it to set our appbar title.
             title: new Text('ResideMenu'),
           ),
-        ));
+        ),
+      onClose: (){
+          print("closed");
+      },
+      onOpen: (left){
+          if(left){
+            print("openLeft");
+            setState(() {
+
+            });
+          }
+          else{
+            print("openRight");
+          }
+      },
+      onOffsetChange: (offset){
+          print(offset);
+      },
+
+    );
   }
 
 
@@ -125,20 +149,5 @@ class _MainActivityState extends State<MainActivity> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _menuController = new MenuController(
-        listener: new MenuListener(
-            onClose: (){
-//          print("closed");
-
-            }
-            ,
-            onOpen: (bool left){
-//          print(left);
-            }
-            ,onOffsetChange: (double offset){
-//          print(offset);
-        }
-        )
-    );
   }
 }

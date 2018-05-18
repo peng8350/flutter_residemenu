@@ -29,6 +29,12 @@ class ResideMenu extends StatefulWidget {
   // used to set bottom bg and color
   final BoxDecoration decoration;
 
+  final OnOpen onOpen;
+
+  final OnClose onClose;
+
+  final OnOffsetChange onOffsetChange;
+
   ResideMenu(
       {@required this.child,
       this.leftView,
@@ -36,6 +42,9 @@ class ResideMenu extends StatefulWidget {
       this.decoration: const BoxDecoration(),
       this.direction: ScrollDirection.LEFT,
       this.elevation: 12.0,
+      this.onOpen,
+      this.onClose,
+      this.onOffsetChange,
       this.controller,
       Key key})
       : assert(child != null),
@@ -67,11 +76,23 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
 
   void _onScrollEnd(DragEndDetails details) {
     if (_contentController.value > 0.5) {
-      widget.controller.openMenu(true);
+      if (widget.controller.openMenu(true)) {
+        if (widget.onOpen != null) {
+          widget.onOpen(true);
+        }
+      }
     } else if (_contentController.value < -0.5) {
-      widget.controller.openMenu(false);
+      if (widget.controller.openMenu(false)) {
+        if (widget.onOpen != null) {
+          widget.onOpen(false);
+        }
+      }
     } else {
-      widget.controller.closeMenu();
+      if (widget.controller.closeMenu()) {
+        if (widget.onClose != null) {
+          widget.onClose();
+        }
+      }
     }
     _lastRawX = 0.0;
   }
@@ -84,11 +105,17 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     }
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
+  void _init() {
+    if(widget.controller==null)
+    widget.controller = new MenuController();
     _menuController =
-        new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0);
+    new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0)
+      ..addListener(() {
+        if (widget.onOffsetChange != null) {
+          widget.onOffsetChange(_menuController.value);
+        }
+      });
+
     _contentController = new AnimationController(
         lowerBound: widget.direction == ScrollDirection.LEFT ? 0.0 : -1.0,
         upperBound: widget.direction == ScrollDirection.RIGHT ? 0.0 : 1.0,
@@ -105,10 +132,17 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
       ..addListener(() {
         _menuController.value = 2.0 - _contentController.value.abs();
       });
-    if (widget.controller == null) {
-      widget.controller = new MenuController();
-    }
-    widget.controller._bind(_contentController);
+    widget.controller._aniController =_contentController;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _init();
+//    if (widget.controller == null) {
+//      widget.controller = new MenuController();
+//    }
+//    widget.controller._bind(_contentController);
     super.initState();
   }
 
@@ -129,7 +163,6 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
         onHorizontalDragUpdate: _onScrollMove,
         onHorizontalDragEnd: _onScrollEnd,
         child: new Stack(
-
           children: <Widget>[
             new Container(
               decoration: widget.decoration,
@@ -137,7 +170,6 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
             new _MenuTransition(
               valueControll: _menuController,
               child: new Container(
-
                 child: new Align(
                   child: _isLeft ? widget.leftView : widget.rightView,
                   alignment: _isLeft ? Alignment.topLeft : Alignment.topRight,
@@ -173,19 +205,13 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 }
 
-class MenuListener {
-  final OnOpen onOpen;
-  final OnClose onClose;
-
-  final OnOffsetChange onOffsetChange;
-  MenuListener({this.onClose, this.onOpen, this.onOffsetChange});
-}
-
 class _MenuTransition extends AnimatedWidget {
   final Widget child;
 
   _MenuTransition(
-      {@required this.child, @required Animation<double> valueControll, Key key})
+      {@required this.child,
+      @required Animation<double> valueControll,
+      Key key})
       : super(key: key, listenable: valueControll);
 
   Animation<double> get valueControll => listenable;
@@ -200,7 +226,7 @@ class _MenuTransition extends AnimatedWidget {
       final Matrix4 transform = new Matrix4.identity()
         ..scale(valueControll.value.abs(), valueControll.value.abs(), 1.0);
       return new Opacity(
-        opacity: 2.0-valueControll.value,
+        opacity: 2.0 - valueControll.value,
         child: new Transform(
             transform: transform,
             child: child,
@@ -226,10 +252,10 @@ class _ContentTransition extends AnimatedWidget {
     return new LayoutBuilder(builder: (context, cons) {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
+      double val = menuOffset.value;
       final Matrix4 transform = new Matrix4.identity()
-        ..scale(1.0 - 0.25 * menuOffset.value.abs(),
-            1 - 0.25 * menuOffset.value.abs(), 1.0)
-        ..translate(menuOffset.value * 0.8 * width);
+        ..scale(1.0 - 0.25 * val.abs(), 1 - 0.25 * val.abs(), 1.0)
+        ..translate(val * 0.8 * width);
       ;
       return new Transform(
           transform: transform,
@@ -240,42 +266,26 @@ class _ContentTransition extends AnimatedWidget {
 }
 
 class MenuController {
-  AnimationController _animation;
-  MenuListener listener;
+  AnimationController _aniController;
   bool _isOpen = false;
 
-  MenuController({this.listener}) : super();
-
-  void openMenu(left) {
-    _animation.animateTo(left ? 1.0 : -1.0);
-    if (!isOpened) {
+  bool openMenu(left) {
+    _aniController.animateTo(left ? 1.0 : -1.0);
+    if (!isOpen) {
       _isOpen = true;
-      if (listener != null) {
-        listener.onOpen(left);
-      }
+      return true;
     }
+    return false;
   }
 
-  void closeMenu() {
-    _animation.animateTo(0.0);
-    if (isOpened) {
+  bool closeMenu() {
+    _aniController.animateTo(0.0);
+    if (isOpen) {
       _isOpen = false;
-      if (listener != null) {
-        listener.onClose();
-      }
+      return true;
     }
+    return false;
   }
 
-  void _bind(AnimationController animation) {
-    _animation = animation;
-    _animation.addListener(() {
-      if (listener != null) {
-        listener.onOffsetChange(_animation.value);
-      }
-    });
-  }
-
-  double get offset => _animation.value;
-
-  bool get isOpened => _isOpen;
+  bool get isOpen => _isOpen;
 }
