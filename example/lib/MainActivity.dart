@@ -12,7 +12,7 @@ class MainActivity extends StatefulWidget{
   }
 }
 
-class _MainActivityState extends State<MainActivity> {
+class _MainActivityState extends State<MainActivity> with TickerProviderStateMixin {
   MenuController _menuController;
 
   Widget buildItem(msg) {
@@ -70,9 +70,9 @@ class _MainActivityState extends State<MainActivity> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
-//    MenuController controller=  new MenuController();
     return new ResideMenu(
         decoration: new BoxDecoration(
             image: new DecorationImage(
@@ -123,6 +123,7 @@ class _MainActivityState extends State<MainActivity> {
           ),
         ),
       onClose: (){
+
           print("closed");
       },
       onOpen: (left){
@@ -137,7 +138,6 @@ class _MainActivityState extends State<MainActivity> {
           }
       },
       onOffsetChange: (offset){
-          print(offset);
       },
 
     );
@@ -149,5 +149,6 @@ class _MainActivityState extends State<MainActivity> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    _menuController = new MenuController(vsync: this);
   }
 }

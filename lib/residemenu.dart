@@ -62,7 +62,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   //check if user scroll left,or is Right
   bool _isLeft = true;
   // this will controll ContainerAnimation
-  AnimationController _contentController, _menuController;
+  AnimationController _menuController;
 
   void _onScrollStart(DragStartDetails details) {
     _lastRawX = details.globalPosition.dx;
@@ -70,29 +70,17 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
 
   void _onScrollMove(DragUpdateDetails details) {
     double offset = (details.globalPosition.dx - _lastRawX) / _width * 2.0;
-    _contentController.value += offset;
+    widget.controller.value += offset;
     _lastRawX = details.globalPosition.dx;
   }
 
   void _onScrollEnd(DragEndDetails details) {
-    if (_contentController.value > 0.5) {
-      if (widget.controller.openMenu(true)) {
-        if (widget.onOpen != null) {
-          widget.onOpen(true);
-        }
-      }
-    } else if (_contentController.value < -0.5) {
-      if (widget.controller.openMenu(false)) {
-        if (widget.onOpen != null) {
-          widget.onOpen(false);
-        }
-      }
+    if (widget.controller.value > 0.5) {
+      widget.controller.openMenu(true);
+    } else if (widget.controller.value < -0.5) {
+      widget.controller.openMenu(false);
     } else {
-      if (widget.controller.closeMenu()) {
-        if (widget.onClose != null) {
-          widget.onClose();
-        }
-      }
+      widget.controller.closeMenu();
     }
     _lastRawX = 0.0;
   }
@@ -106,43 +94,49 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   }
 
   void _init() {
-    if(widget.controller==null)
-    widget.controller = new MenuController();
+    if (widget.controller == null) widget.controller = new MenuController(vsync:this);
     _menuController =
-    new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0)
-      ..addListener(() {
-        if (widget.onOffsetChange != null) {
-          widget.onOffsetChange(_menuController.value);
-        }
-      });
+        new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0);
 
-    _contentController = new AnimationController(
-        lowerBound: widget.direction == ScrollDirection.LEFT ? 0.0 : -1.0,
-        upperBound: widget.direction == ScrollDirection.RIGHT ? 0.0 : 1.0,
-        value: 0.0,
+    widget.controller = new MenuController(
         vsync: this,
-        duration: const Duration(milliseconds: 300))
+        )
       ..addListener(() {
-        if (_contentController.value > 0.0) {
+        if (widget.controller.value > 0.0) {
           _changeState(true);
         } else {
           _changeState(false);
         }
       })
       ..addListener(() {
-        _menuController.value = 2.0 - _contentController.value.abs();
+        _menuController.value = 2.0 - widget.controller.value.abs();
+        if (widget.onOffsetChange != null) {
+          widget.onOffsetChange(widget.controller.value.abs());
+        }
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          if (widget.controller.isOpenLeft) {
+            if(widget.onOpen!=null){
+              widget.onOpen(true);
+            }
+          } else if (widget.controller.isOpenRight) {
+            if(widget.onOpen!=null){
+              widget.onOpen(false);
+            }
+          } else {
+            if(widget.onClose!=null){
+              widget.onClose();
+            }
+          }
+        }
       });
-    widget.controller._aniController =_contentController;
   }
 
   @override
   void initState() {
     // TODO: implement initState
     _init();
-//    if (widget.controller == null) {
-//      widget.controller = new MenuController();
-//    }
-//    widget.controller._bind(_contentController);
     super.initState();
   }
 
@@ -150,8 +144,15 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
   void dispose() {
     // TODO: implement dispose
     _menuController.dispose();
-    _contentController.dispose();
+    widget.controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(ResideMenu oldWidget) {
+    // TODO: implement didUpdateWidget
+    widget.controller = oldWidget.controller;
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -196,7 +197,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                       ),
                     ]),
                   ),
-                  menuOffset: _contentController),
+                  menuOffset: widget.controller),
             )
           ],
         ),
@@ -265,27 +266,21 @@ class _ContentTransition extends AnimatedWidget {
   }
 }
 
-class MenuController {
-  AnimationController _aniController;
-  bool _isOpen = false;
+class MenuController extends AnimationController {
+  MenuController({TickerProvider vsync})
+      : super(vsync:vsync,lowerBound: -1.0, duration: const Duration(milliseconds: 300),value:0.0);
 
-  bool openMenu(left) {
-    _aniController.animateTo(left ? 1.0 : -1.0);
-    if (!isOpen) {
-      _isOpen = true;
-      return true;
-    }
-    return false;
+  void openMenu(left) {
+    animateTo(left ? 1.0 : -1.0);
   }
 
-  bool closeMenu() {
-    _aniController.animateTo(0.0);
-    if (isOpen) {
-      _isOpen = false;
-      return true;
-    }
-    return false;
+  void closeMenu() {
+    animateTo(0.0);
   }
 
-  bool get isOpen => _isOpen;
+  bool get isOpenLeft => value == -1.0;
+
+  bool get isOpenRight => value == 1.0;
+
+  bool get isClose => value == 0.0;
 }
