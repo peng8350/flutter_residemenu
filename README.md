@@ -27,13 +27,45 @@ the more you can see the demo find how to use.If you do not meet your needs, you
 
 ```
 
-    new ResideMenu(
+      Widget buildItem(msg) {
+        return new Material(
+          color: Colors.transparent,
+          child: new InkWell(
+            child: const ResideMenuItem(
+                title: "菜单一", icon: const Icon(Icons.home, color: Colors.grey),right: const Icon(Icons.arrow_forward,color:Colors.grey),),
+            onTap: () {
+              Scaffold
+                  .of(context)
+                  .showSnackBar(new SnackBar(content: new Text('你点击了$msg')));
+            },
+          ),
+        );
+      }
+
+    new ResideMenu.scafford(
 
             decoration: new BoxDecoration(
                 image: new DecorationImage(
                     image: new AssetImage("images/menu_background.png"),
                     fit: BoxFit.cover)),
-            leftScafford: ...,
+            leftScafford: new MenuScaffold(
+                                  header: new ConstrainedBox(
+
+                                    constraints: new BoxConstraints(maxHeight: 80.0, maxWidth: 80.0),
+                                    child: new CircleAvatar(
+
+                                      backgroundImage: new AssetImage('images/author.jpeg'),
+                                      radius: 40.0,
+                                    ),
+                                  ),
+                                  children: <Widget>[
+                                    buildItem("菜单一"),
+                                    buildItem("菜单二"),
+                                    buildItem("菜单三"),
+                                    buildItem("菜单四"),
+                                    buildItem("菜单五")
+                                  ],
+                                ),
             rightScafford: ...,
             controller: _menuController,
             child: ...
@@ -53,7 +85,9 @@ the more you can see the demo find how to use.If you do not meet your needs, you
 | elevation |   Content View shadow | double | 12.0 |optional |
 | controller | Control menu behavior, get menu status, monitor menu open, close and other events.   | MenuController | null | optional |
 | decoration | use to set bg and color in bottom   | BoxDecoration | null | optional |
-
+| onOpen |   Event | (bool isOpenLeft) => Void | null |optional |
+| onClose | Event   | () => Void | null | optional |
+| onOffsetChange | when the child offset change it will callback(0~1)  | (double offset) => void | null | optional |
 
 ## LICENSE
 
