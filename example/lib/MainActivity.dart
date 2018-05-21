@@ -32,11 +32,11 @@ class _MainActivityState extends State<MainActivity>
   @override
   Widget build(BuildContext context) {
     return new ResideMenu.scafford(
+      direction: ScrollDirection.RIGHT,
       decoration: new BoxDecoration(
           image: new DecorationImage(
               image: new AssetImage("images/menu_background.png"),
               fit: BoxFit.cover)),
-      direction: ScrollDirection.BOTH,
       controller: _menuController,
       leftScaffold: new MenuScaffold(
         header: new ConstrainedBox(

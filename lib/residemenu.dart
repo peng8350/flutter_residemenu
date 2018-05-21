@@ -88,7 +88,16 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
 
   void _onScrollMove(DragUpdateDetails details) {
     double offset = (details.globalPosition.dx - _lastRawX) / _width * 2.0;
-    widget.controller.value += offset;
+    if(widget.direction==ScrollDirection.LEFT&&widget.controller.value+offset>=0) {
+      widget.controller.value += offset;
+    }
+    else if(widget.direction==ScrollDirection.RIGHT&&widget.controller.value+offset<=0){
+      widget.controller.value+=offset;
+    }
+    else if(widget.direction==ScrollDirection.BOTH){
+      widget.controller.value+=offset;
+    }
+
     _lastRawX = details.globalPosition.dx;
   }
 
