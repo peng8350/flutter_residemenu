@@ -403,7 +403,10 @@ class MenuScaffold extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           header,
-          new Column(
+          new ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            itemExtent: this.itemExtent,
+            shrinkWrap: true,
             children: children,
           ),
           footer
