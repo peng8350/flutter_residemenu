@@ -15,7 +15,7 @@ dependencies:
   ...
 
   residemenu:
-    ^1.1.5
+    ^1.2.0
 
 ```
 

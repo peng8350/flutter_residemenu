@@ -13,3 +13,7 @@
 
 ## [1.1.8] - 2018-5-21
 * Fix my igore to limit scroll when Direction == LEFT or RIGHT
+
+## [1.2.0] - 2018-5-22
+* Fixed when content View clicks some gestureDector can not be closed.
+* Fix itemExtent not used for Scafford
