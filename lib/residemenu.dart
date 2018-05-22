@@ -202,28 +202,40 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                  child: _isLeft ? widget.leftView : widget.rightView
               ),
             ),
-            new GestureDetector(
-              onTap: () {
-                widget.controller.closeMenu();
-              },
-              child: new _ContentTransition(
-                  child: new Container(
-                    child: widget.child,
-                    decoration: new BoxDecoration(boxShadow: <BoxShadow>[
-                      new BoxShadow(
-                        color: const Color(0xcc000000),
-                        offset: const Offset(-2.0, 2.0),
-                        blurRadius: widget.elevation * 0.66,
+            new _ContentTransition(
+                  child: new Stack(
+                    children: <Widget>[
+
+                      new Container(
+                        child: widget.child,
+                        decoration: new BoxDecoration(boxShadow: <BoxShadow>[
+                          new BoxShadow(
+                            color: const Color(0xcc000000),
+                            offset: const Offset(-2.0, 2.0),
+                            blurRadius: widget.elevation * 0.66,
+                          ),
+                          new BoxShadow(
+                            color: const Color(0x80000000),
+                            offset: const Offset(0.0, 3.0),
+                            blurRadius: widget.elevation,
+                          ),
+                        ]),
                       ),
-                      new BoxShadow(
-                        color: const Color(0x80000000),
-                        offset: const Offset(0.0, 3.0),
-                        blurRadius: widget.elevation,
-                      ),
-                    ]),
+                      new Offstage(
+                        offstage: widget.controller.isClose,
+                        child: new GestureDetector(
+                          child: new Container(color:const Color(0x00ff0000),width: cons.biggest.width,height: cons.biggest.height),
+                          onTap: (){
+                            widget.controller.closeMenu();
+                          },
+                        ),
+                      )
+
+                    ],
                   ),
-                  menuOffset: widget.controller),
-            )
+                  menuOffset: widget.controller
+            ),
+
           ],
         ),
       );
@@ -360,7 +372,7 @@ class MenuController extends AnimationController {
 
   bool get isOpenRight => value == -1.0;
 
-  bool get isClose => value == 0.0;
+  bool get isClose => value != 1.0&&value!=-1.0;
 }
 
 class MenuScaffold extends StatelessWidget {

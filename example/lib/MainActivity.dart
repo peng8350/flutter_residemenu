@@ -32,7 +32,7 @@ class _MainActivityState extends State<MainActivity>
   @override
   Widget build(BuildContext context) {
     return new ResideMenu.scafford(
-      direction: ScrollDirection.RIGHT,
+      direction: ScrollDirection.LEFT,
       decoration: new BoxDecoration(
           image: new DecorationImage(
               image: new AssetImage("images/menu_background.png"),
@@ -123,15 +123,9 @@ class _MainActivityState extends State<MainActivity>
 //        print("closed");
       },
       onOpen: (left) {
-        setState(() {
-
-        });
       },
       onOffsetChange: (offset) {
 
-        setState(() {
-
-        });
       },
     );
   }
