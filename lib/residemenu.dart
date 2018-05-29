@@ -33,6 +33,8 @@ class ResideMenu extends StatefulWidget {
 
   final OnClose onClose;
 
+  final bool enableScale, enableFade;
+
   final OnOffsetChange onOffsetChange;
 
   ResideMenu.scafford(
@@ -44,6 +46,8 @@ class ResideMenu extends StatefulWidget {
       this.direction: ScrollDirection.LEFT,
       this.elevation: 12.0,
       this.onOpen,
+      this.enableScale:false,
+      this.enableFade:true,
       this.onClose,
       this.onOffsetChange,
       this.controller,
@@ -62,6 +66,8 @@ class ResideMenu extends StatefulWidget {
       this.elevation: 12.0,
       this.onOpen,
       this.onClose,
+      this.enableScale:true,
+      this.enableFade:true,
       this.onOffsetChange,
       this.controller,
       Key key})
@@ -88,14 +94,14 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
 
   void _onScrollMove(DragUpdateDetails details) {
     double offset = (details.globalPosition.dx - _lastRawX) / _width * 2.0;
-    if(widget.direction==ScrollDirection.LEFT&&widget.controller.value+offset>=0) {
+    if (widget.direction == ScrollDirection.LEFT &&
+        widget.controller.value + offset >= 0) {
       widget.controller.value += offset;
-    }
-    else if(widget.direction==ScrollDirection.RIGHT&&widget.controller.value+offset<=0){
-      widget.controller.value+=offset;
-    }
-    else if(widget.direction==ScrollDirection.BOTH){
-      widget.controller.value+=offset;
+    } else if (widget.direction == ScrollDirection.RIGHT &&
+        widget.controller.value + offset <= 0) {
+      widget.controller.value += offset;
+    } else if (widget.direction == ScrollDirection.BOTH) {
+      widget.controller.value += offset;
     }
 
     _lastRawX = details.globalPosition.dx;
@@ -134,11 +140,17 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
         } else {
           _changeState(false);
         }
+
       })
       ..addListener(() {
         _menuController.value = 2.0 - widget.controller.value.abs();
         if (widget.onOffsetChange != null) {
           widget.onOffsetChange(widget.controller.value.abs());
+        }
+        if(widget.enableFade){
+          setState(() {
+
+          });
         }
       })
       ..addStatusListener((status) {
@@ -197,45 +209,52 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
             ),
             new _MenuTransition(
               valueControll: _menuController,
-              child:  new Container(
-                margin: new EdgeInsets.only(left: (!_isLeft?cons.biggest.width*0.3:0.0),right:(_isLeft?cons.biggest.width*0.3:0.0)),
-                 child: _isLeft ? widget.leftView : widget.rightView
-              ),
+              child: new Container(
+                  margin: new EdgeInsets.only(
+                      left: (!_isLeft ? cons.biggest.width * 0.3 : 0.0),
+                      right: (_isLeft ? cons.biggest.width * 0.3 : 0.0)),
+                  child: _isLeft ? widget.leftView : widget.rightView),
             ),
             new _ContentTransition(
-                  child: new Stack(
-                    children: <Widget>[
-
-                      new Container(
-                        child: widget.child,
-                        decoration: new BoxDecoration(boxShadow: <BoxShadow>[
-                          new BoxShadow(
-                            color: const Color(0xcc000000),
-                            offset: const Offset(-2.0, 2.0),
-                            blurRadius: widget.elevation * 0.66,
-                          ),
-                          new BoxShadow(
-                            color: const Color(0x80000000),
-                            offset: const Offset(0.0, 3.0),
-                            blurRadius: widget.elevation,
-                          ),
-                        ]),
-                      ),
-                      new Offstage(
-                        offstage: widget.controller.isClose,
-                        child: new GestureDetector(
-                          child: new Container(color:const Color(0x00ff0000),width: cons.biggest.width,height: cons.biggest.height),
-                          onTap: (){
-                            widget.controller.closeMenu();
-                          },
+                enableScale: widget.enableScale,
+                child: new Stack(
+                  children: <Widget>[
+                    new Container(
+                      child: widget.child,
+                      decoration: new BoxDecoration(boxShadow: <BoxShadow>[
+                        new BoxShadow(
+                          color: const Color(0xcc000000),
+                          offset: const Offset(-2.0, 2.0),
+                          blurRadius: widget.elevation * 0.66,
                         ),
-                      )
-
-                    ],
-                  ),
-                  menuOffset: widget.controller
-            ),
-
+                        new BoxShadow(
+                          color: const Color(0x80000000),
+                          offset: const Offset(0.0, 3.0),
+                          blurRadius: widget.elevation,
+                        ),
+                      ]),
+                    ),
+                    new Offstage(
+                      offstage: widget.enableFade?false:widget.controller.isClose,
+                      child: new GestureDetector(
+                        child: new Container(
+                            color: new Color.fromARGB(
+                                !widget.enableFade
+                                    ? 0
+                                    : (100*widget.controller.value.abs()).toInt(),
+                                0,
+                                0,
+                                0),
+                            width: cons.biggest.width,
+                            height: cons.biggest.height),
+                        onTap: () {
+                          widget.controller.closeMenu();
+                        },
+                      ),
+                    )
+                  ],
+                ),
+                menuOffset: widget.controller),
           ],
         ),
       );
@@ -254,7 +273,6 @@ class ResideMenuItem extends StatelessWidget {
 
   final double midSpacing, leftSpacing, rightSpacing;
 
-
   const ResideMenuItem(
       {Key key,
       this.title: "菜单物品",
@@ -266,7 +284,6 @@ class ResideMenuItem extends StatelessWidget {
       this.leftSpacing: 40.0,
       this.rightSpacing: 50.0,
       this.midSpacing: 30.0});
-
 
   @override
   Widget build(BuildContext context) {
@@ -305,18 +322,19 @@ class _MenuTransition extends AnimatedWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-
     return new LayoutBuilder(builder: (context, cons) {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
       final Matrix4 transform = new Matrix4.identity()
         ..scale(valueControll.value.abs(), valueControll.value.abs(), 1.0);
-      return new Opacity(
-        opacity: 2.0 - valueControll.value,
-        child: new Transform(
-            transform: transform,
-            child: child,
-            origin: new Offset(width / 2, height / 2)),
+      return new RepaintBoundary(
+        child: new Opacity(
+          opacity: 2.0 - valueControll.value,
+          child: new Transform(
+              transform: transform,
+              child: child,
+              origin: new Offset(width / 2, height / 2)),
+        ),
       );
     });
   }
@@ -325,8 +343,13 @@ class _MenuTransition extends AnimatedWidget {
 class _ContentTransition extends AnimatedWidget {
   final Widget child;
 
+  final bool enableScale;
+
   _ContentTransition(
-      {@required this.child, @required Animation<double> menuOffset, Key key})
+      {@required this.child,
+      @required Animation<double> menuOffset,
+      Key key,
+      this.enableScale})
       : super(key: key, listenable: menuOffset);
 
   Animation<double> get menuOffset => listenable;
@@ -339,14 +362,16 @@ class _ContentTransition extends AnimatedWidget {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
       double val = menuOffset.value;
-      final Matrix4 transform = new Matrix4.identity()
-        ..scale(1.0 - 0.25 * val.abs(), 1 - 0.25 * val.abs(), 1.0)
-        ..translate(val * 0.8 * width);
-      ;
-      return new Transform(
-          transform: transform,
-          child: child,
-          origin: new Offset(width / 2, height / 2));
+      final Matrix4 transform = new Matrix4.identity();
+      if (enableScale) {
+        transform.scale(1.0 - 0.25 * val.abs(), 1 - 0.25 * val.abs(), 1.0);
+      }
+      transform.translate(val * 0.8 * width);
+      return new RepaintBoundary(
+          child: new Transform(
+              transform: transform,
+              child: child,
+              origin: new Offset(width / 2, height / 2)));
     });
   }
 }
@@ -372,7 +397,7 @@ class MenuController extends AnimationController {
 
   bool get isOpenRight => value == -1.0;
 
-  bool get isClose => value != 1.0&&value!=-1.0;
+  bool get isClose => value != 1.0 && value != -1.0;
 }
 
 class MenuScaffold extends StatelessWidget {
@@ -385,7 +410,7 @@ class MenuScaffold extends StatelessWidget {
   MenuScaffold(
       {Key key,
       @required this.children,
-      this.topMargin:100.0,
+      this.topMargin: 100.0,
       Widget header,
       Widget footer,
       this.itemExtent: 40.0})
@@ -398,7 +423,7 @@ class MenuScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return new Container(
-      padding: new EdgeInsets.only(top:this.topMargin),
+      padding: new EdgeInsets.only(top: this.topMargin),
       child: new Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[

@@ -15,7 +15,7 @@ dependencies:
   ...
 
   residemenu:
-    ^1.2.0
+    ^1.2.2
 
 ```
 
@@ -88,6 +88,8 @@ the more you can see the demo find how to use.If you do not meet your needs, you
 | onOpen |   Event | (bool isOpenLeft) => Void | null |optional |
 | onClose | Event   | () => Void | null | optional |
 | onOffsetChange | when the child offset change it will callback(0~1)  | (double offset) => void | null | optional |
+| enableFade | fadeColor cover content View   | bool | true | optional |
+| enableScale | if you the gpu too high that lead the performance problem,it should be closed   | bool | false | optional |
 
 ## LICENSE
 

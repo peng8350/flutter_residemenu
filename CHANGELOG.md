@@ -17,3 +17,6 @@
 ## [1.2.0] - 2018-5-22
 * Fixed when content View clicks some gestureDector can not be closed.
 * Fix itemExtent not used for Scafford
+
+## 1.2.3 - 2018-5-30
+* Add enableScale,enableFade option,ScaleAnimation has a proformance problem
