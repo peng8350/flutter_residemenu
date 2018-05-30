@@ -46,7 +46,7 @@ class ResideMenu extends StatefulWidget {
       this.direction: ScrollDirection.LEFT,
       this.elevation: 12.0,
       this.onOpen,
-      this.enableScale:false,
+      this.enableScale:true,
       this.enableFade:true,
       this.onClose,
       this.onOffsetChange,
@@ -147,11 +147,6 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
         if (widget.onOffsetChange != null) {
           widget.onOffsetChange(widget.controller.value.abs());
         }
-        if(widget.enableFade){
-          setState(() {
-
-          });
-        }
       })
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
@@ -235,7 +230,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                       ]),
                     ),
                     new Offstage(
-                      offstage: widget.enableFade?false:widget.controller.isClose,
+                      offstage: widget.enableFade?widget.controller.value==0:widget.controller.isClose,
                       child: new GestureDetector(
                         child: new Container(
                             color: new Color.fromARGB(
