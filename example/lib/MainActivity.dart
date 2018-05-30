@@ -33,7 +33,6 @@ class _MainActivityState extends State<MainActivity>
   Widget build(BuildContext context) {
     return new ResideMenu.scafford(
       direction: ScrollDirection.BOTH,
-      enableScale: true,
       decoration: new BoxDecoration(
           image: new DecorationImage(
               image: new AssetImage("images/menu_background.png"),
