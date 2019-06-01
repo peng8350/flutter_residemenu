@@ -6,7 +6,6 @@
 
 library residemenu;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 typedef void OnOpen(bool isLeft);
@@ -20,12 +19,16 @@ class ResideMenu extends StatefulWidget {
   final Widget child;
 
   final ScrollDirection direction;
+
   //left or right Menu View
   final Widget leftView, rightView;
+
   //shadow elevation
   final double elevation;
+
   // it will control the menu Action,such as openMenu,closeMenu
   MenuController controller;
+
   // used to set bottom bg and color
   final BoxDecoration decoration;
 
@@ -46,8 +49,8 @@ class ResideMenu extends StatefulWidget {
       this.direction: ScrollDirection.LEFT,
       this.elevation: 12.0,
       this.onOpen,
-      this.enableScale:true,
-      this.enableFade:true,
+      this.enableScale: true,
+      this.enableFade: true,
       this.onClose,
       this.onOffsetChange,
       this.controller,
@@ -66,8 +69,8 @@ class ResideMenu extends StatefulWidget {
       this.elevation: 12.0,
       this.onOpen,
       this.onClose,
-      this.enableScale:true,
-      this.enableFade:true,
+      this.enableScale: true,
+      this.enableFade: true,
       this.onOffsetChange,
       this.controller,
       Key key})
@@ -78,44 +81,26 @@ class ResideMenu extends StatefulWidget {
   _ResideMenuState createState() => new _ResideMenuState();
 }
 
-class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
-  // the last move point
-  double _lastRawX = 0.0;
+class _ResideMenuState extends State<ResideMenu> with SingleTickerProviderStateMixin {
   //determine width
   double _width = 0.0;
   //check if user scroll left,or is Right
   bool _isLeft = true;
-  // this will controll ContainerAnimation
-  AnimationController _menuController;
-
-  void _onScrollStart(DragStartDetails details) {
-    _lastRawX = details.globalPosition.dx;
-  }
+  MenuController _controller;
 
   void _onScrollMove(DragUpdateDetails details) {
-    double offset = (details.globalPosition.dx - _lastRawX) / _width * 2.0;
-    if (widget.direction == ScrollDirection.LEFT &&
-        widget.controller.value + offset >= 0) {
-      widget.controller.value += offset;
-    } else if (widget.direction == ScrollDirection.RIGHT &&
-        widget.controller.value + offset <= 0) {
-      widget.controller.value += offset;
-    } else if (widget.direction == ScrollDirection.BOTH) {
-      widget.controller.value += offset;
-    }
-
-    _lastRawX = details.globalPosition.dx;
+    double offset = details.primaryDelta / _width * 2.0;
+    _controller.value += offset;
   }
 
   void _onScrollEnd(DragEndDetails details) {
-    if (widget.controller.value > 0.5) {
-      widget.controller.openMenu(true);
-    } else if (widget.controller.value < -0.5) {
-      widget.controller.openMenu(false);
+    if (_controller.value > 0.5) {
+      _controller.openMenu(true);
+    } else if (_controller.value < -0.5) {
+      _controller.openMenu(false);
     } else {
-      widget.controller.closeMenu();
+      _controller.closeMenu();
     }
-    _lastRawX = 0.0;
   }
 
   void _changeState(bool left) {
@@ -126,66 +111,73 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     }
   }
 
-  void _init() {
-    _menuController =
-        new AnimationController(vsync: this, lowerBound: 1.0, upperBound: 2.0);
-    if (widget.controller == null)
-      widget.controller = new MenuController(
-        vsync: this,
-      );
-    widget.controller
-      ..addListener(() {
-        if (widget.controller.value > 0.0) {
-          _changeState(true);
-        } else {
-          _changeState(false);
-        }
+  void _handleScrollChange() {
+    if (_controller.value > 0.0) {
+      _changeState(true);
+    } else {
+      _changeState(false);
+    }
+    if (widget.onOffsetChange != null) {
+      widget.onOffsetChange(_controller.value.abs());
+    }
+  }
 
-      })
-      ..addListener(() {
-        _menuController.value = 2.0 - widget.controller.value.abs();
-        if (widget.onOffsetChange != null) {
-          widget.onOffsetChange(widget.controller.value.abs());
+  void _handleScrollEnd(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      if (_controller.isOpenLeft) {
+        if (widget.onOpen != null) {
+          widget.onOpen(true);
         }
-      })
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          if (widget.controller.isOpenLeft) {
-            if (widget.onOpen != null) {
-              widget.onOpen(true);
-            }
-          } else if (widget.controller.isOpenRight) {
-            if (widget.onOpen != null) {
-              widget.onOpen(false);
-            }
-          } else {
-            if (widget.onClose != null) {
-              widget.onClose();
-            }
-          }
+      } else if (_controller.isOpenRight) {
+        if (widget.onOpen != null) {
+          widget.onOpen(false);
         }
-      });
+      } else {
+        if (widget.onClose != null) {
+          widget.onClose();
+        }
+      }
+    }
+  }
+
+  // update listener
+  void _update() {
+    final MenuController newController =
+        widget.controller ?? MenuController(vsync: this);
+    if (newController == _controller) return;
+    if (_controller != null)
+    _controller
+      ..removeListener(_handleScrollChange)
+      ..removeStatusListener(_handleScrollEnd);
+    _controller = newController;
+    if (_controller != null)
+      _controller
+        ..addListener(_handleScrollChange)
+        ..addStatusListener(_handleScrollEnd);
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    _init();
-    super.initState();
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    _update();
+    super.didChangeDependencies();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _menuController.dispose();
-    widget.controller.dispose();
+    _controller..removeListener(_handleScrollChange)..removeStatusListener(_handleScrollEnd);
+    if(widget.controller==null){
+      _controller.dispose();
+    }
+    _controller = null;
     super.dispose();
   }
 
   @override
   void didUpdateWidget(ResideMenu oldWidget) {
     // TODO: implement didUpdateWidget
-    widget.controller = oldWidget.controller;
+    _update();
     super.didUpdateWidget(oldWidget);
   }
 
@@ -194,7 +186,6 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
     return new LayoutBuilder(builder: (context, cons) {
       _width = cons.biggest.width;
       return new GestureDetector(
-        onHorizontalDragStart: _onScrollStart,
         onHorizontalDragUpdate: _onScrollMove,
         onHorizontalDragEnd: _onScrollEnd,
         child: new Stack(
@@ -203,7 +194,7 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
               decoration: widget.decoration,
             ),
             new _MenuTransition(
-              valueControll: _menuController,
+              offset: widget.controller,
               child: new Container(
                   margin: new EdgeInsets.only(
                       left: (!_isLeft ? cons.biggest.width * 0.3 : 0.0),
@@ -230,13 +221,16 @@ class _ResideMenuState extends State<ResideMenu> with TickerProviderStateMixin {
                       ]),
                     ),
                     new Offstage(
-                      offstage: widget.enableFade?widget.controller.value==0:widget.controller.isClose,
+                      offstage: widget.enableFade
+                          ? widget.controller.value == 0
+                          : widget.controller.isClose,
                       child: new GestureDetector(
                         child: new Container(
                             color: new Color.fromARGB(
                                 !widget.enableFade
                                     ? 0
-                                    : (100*widget.controller.value.abs()).toInt(),
+                                    : (100 * widget.controller.value.abs())
+                                        .toInt(),
                                 0,
                                 0,
                                 0),
@@ -306,13 +300,10 @@ class ResideMenuItem extends StatelessWidget {
 class _MenuTransition extends AnimatedWidget {
   final Widget child;
 
-  _MenuTransition(
-      {@required this.child,
-      @required Animation<double> valueControll,
-      Key key})
-      : super(key: key, listenable: valueControll);
+  final Animation<double> offset;
 
-  Animation<double> get valueControll => listenable;
+  _MenuTransition({@required this.child, this.offset, Key key})
+      : super(key: key, listenable: offset);
 
   @override
   Widget build(BuildContext context) {
@@ -321,15 +312,13 @@ class _MenuTransition extends AnimatedWidget {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
       final Matrix4 transform = new Matrix4.identity()
-        ..scale(valueControll.value.abs(), valueControll.value.abs(), 1.0);
-      return new RepaintBoundary(
-        child: new Opacity(
-          opacity: 2.0 - valueControll.value,
-          child: new Transform(
-              transform: transform,
-              child: child,
-              origin: new Offset(width / 2, height / 2)),
-        ),
+        ..scale(2 - offset.value.abs(), 2 - offset.value.abs(), 1.0);
+      return Opacity(
+        opacity: offset.value.abs(),
+        child: new Transform(
+            transform: transform,
+            child: child,
+            origin: new Offset(width / 2, height / 2)),
       );
     });
   }
@@ -352,7 +341,6 @@ class _ContentTransition extends AnimatedWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-
     return new LayoutBuilder(builder: (context, cons) {
       double width = cons.biggest.width;
       double height = cons.biggest.height;
