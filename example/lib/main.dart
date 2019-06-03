@@ -10,6 +10,7 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       title: 'Residemenu',
       debugShowCheckedModeBanner: false,
+      showPerformanceOverlay: true,
       theme: new ThemeData(
         // This is the theme of your application.
         //

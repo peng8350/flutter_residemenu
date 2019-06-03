@@ -36,7 +36,7 @@ class ResideMenu extends StatefulWidget {
 
   final OnClose onClose;
 
-  final bool enableScale, enableFade;
+  final bool enableScale, enableFade, enable3dRotate;
 
   final OnOffsetChange onOffsetChange;
 
@@ -51,6 +51,7 @@ class ResideMenu extends StatefulWidget {
       this.onOpen,
       this.enableScale: true,
       this.enableFade: true,
+      this.enable3dRotate: false,
       this.onClose,
       this.onOffsetChange,
       this.controller,
@@ -69,6 +70,7 @@ class ResideMenu extends StatefulWidget {
       this.elevation: 12.0,
       this.onOpen,
       this.onClose,
+        this.enable3dRotate:false,
       this.enableScale: true,
       this.enableFade: true,
       this.onOffsetChange,
@@ -81,9 +83,11 @@ class ResideMenu extends StatefulWidget {
   _ResideMenuState createState() => new _ResideMenuState();
 }
 
-class _ResideMenuState extends State<ResideMenu> with SingleTickerProviderStateMixin {
+class _ResideMenuState extends State<ResideMenu>
+    with SingleTickerProviderStateMixin {
   //determine width
   double _width = 0.0;
+
   //check if user scroll left,or is Right
   bool _isLeft = true;
   MenuController _controller;
@@ -146,9 +150,9 @@ class _ResideMenuState extends State<ResideMenu> with SingleTickerProviderStateM
         widget.controller ?? MenuController(vsync: this);
     if (newController == _controller) return;
     if (_controller != null)
-    _controller
-      ..removeListener(_handleScrollChange)
-      ..removeStatusListener(_handleScrollEnd);
+      _controller
+        ..removeListener(_handleScrollChange)
+        ..removeStatusListener(_handleScrollEnd);
     _controller = newController;
     if (_controller != null)
       _controller
@@ -166,8 +170,10 @@ class _ResideMenuState extends State<ResideMenu> with SingleTickerProviderStateM
   @override
   void dispose() {
     // TODO: implement dispose
-    _controller..removeListener(_handleScrollChange)..removeStatusListener(_handleScrollEnd);
-    if(widget.controller==null){
+    _controller
+      ..removeListener(_handleScrollChange)
+      ..removeStatusListener(_handleScrollEnd);
+    if (widget.controller == null) {
       _controller.dispose();
     }
     _controller = null;
@@ -190,40 +196,42 @@ class _ResideMenuState extends State<ResideMenu> with SingleTickerProviderStateM
         onHorizontalDragEnd: _onScrollEnd,
         child: new Stack(
           children: <Widget>[
-            new Container(
-              decoration: widget.decoration,
-            ),
-            new _MenuTransition(
-              offset: widget.controller,
+            Offstage(
+              offstage: _controller.value==0.0,
               child: new Container(
-                  margin: new EdgeInsets.only(
-                      left: (!_isLeft ? cons.biggest.width * 0.3 : 0.0),
-                      right: (_isLeft ? cons.biggest.width * 0.3 : 0.0)),
-                  child: _isLeft ? widget.leftView : widget.rightView),
+                decoration: widget.decoration,
+              ),
+            ),
+            Offstage(
+              offstage: _controller.value==0.0,
+              child: _MenuTransition(
+                offset: widget.controller,
+                child: new Container(
+                    margin: new EdgeInsets.only(
+                        left: (!_isLeft ? cons.biggest.width * 0.3 : 0.0),
+                        right: (_isLeft ? cons.biggest.width * 0.3 : 0.0)),
+                    child: _isLeft ? widget.leftView : widget.rightView),
+              ),
             ),
             new _ContentTransition(
                 enableScale: widget.enableScale,
+                enable3D: widget.enable3dRotate,
                 child: new Stack(
                   children: <Widget>[
                     new Container(
                       child: widget.child,
-                      decoration: new BoxDecoration(boxShadow: <BoxShadow>[
-                        new BoxShadow(
-                          color: const Color(0xcc000000),
-                          offset: const Offset(-2.0, 2.0),
-                          blurRadius: widget.elevation * 0.66,
-                        ),
-                        new BoxShadow(
-                          color: const Color(0x80000000),
-                          offset: const Offset(0.0, 3.0),
-                          blurRadius: widget.elevation,
-                        ),
-                      ]),
+                      decoration: _controller.value == 0.0
+                          ? null
+                          : new BoxDecoration(boxShadow: <BoxShadow>[
+                              new BoxShadow(
+                                color: const Color(0xcc000000),
+                                offset: const Offset(-2.0, 2.0),
+                                blurRadius: widget.elevation * 0.66,
+                              ),
+                            ]),
                     ),
                     new Offstage(
-                      offstage: widget.enableFade
-                          ? widget.controller.value == 0
-                          : widget.controller.isClose,
+                      offstage: _controller.value!=1.0&&_controller.value!=-1.0,
                       child: new GestureDetector(
                         child: new Container(
                             color: new Color.fromARGB(
@@ -244,7 +252,7 @@ class _ResideMenuState extends State<ResideMenu> with SingleTickerProviderStateM
                   ],
                 ),
                 menuOffset: widget.controller),
-          ],
+          ].where((child) => child != null).toList(),
         ),
       );
     });
@@ -328,11 +336,12 @@ class _ContentTransition extends AnimatedWidget {
   final Widget child;
 
   final bool enableScale;
-
+  final bool enable3D;
   _ContentTransition(
       {@required this.child,
       @required Animation<double> menuOffset,
       Key key,
+        this.enable3D,
       this.enableScale})
       : super(key: key, listenable: menuOffset);
 
@@ -346,15 +355,19 @@ class _ContentTransition extends AnimatedWidget {
       double height = cons.biggest.height;
       double val = menuOffset.value;
       final Matrix4 transform = new Matrix4.identity();
+      if(enable3D) {
+        transform.setEntry(3, 2, 0.0008);
+        transform.rotateY(val * 0.8);
+      }
       if (enableScale) {
         transform.scale(1.0 - 0.25 * val.abs(), 1 - 0.25 * val.abs(), 1.0);
       }
+
       transform.translate(val * 0.8 * width);
-      return new RepaintBoundary(
-          child: new Transform(
-              transform: transform,
-              child: child,
-              origin: new Offset(width / 2, height / 2)));
+      return Transform(
+          transform: transform,
+          child: child,
+          origin: new Offset(width / 2, height / 2));
     });
   }
 }
