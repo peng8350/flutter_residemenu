@@ -28,17 +28,22 @@ class _MainActivityState extends State<MainActivity>
     );
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _menuController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return new ResideMenu.scafford(
-      direction: ScrollDirection.BOTH,
+    return new ResideMenu.scaffold(
       enable3dRotate: true,
+      controller: _menuController,
       decoration: new BoxDecoration(
           image: new DecorationImage(
               image: new AssetImage("images/menu_background.png"),
               fit: BoxFit.none)),
-      controller: _menuController,
       leftScaffold: new MenuScaffold(
         header: new ConstrainedBox(
 
@@ -121,9 +126,10 @@ class _MainActivityState extends State<MainActivity>
         ),
       ),
       onClose: () {
-//        print("closed");
+        print("closed");
       },
       onOpen: (left) {
+        print(left);
       },
       onOffsetChange: (offset) {
 
@@ -135,6 +141,6 @@ class _MainActivityState extends State<MainActivity>
   void initState() {
     // TODO: implement initState
     super.initState();
-    _menuController = new MenuController(vsync: this);
+    _menuController = new MenuController(vsync: this,direction: ScrollDirection.LEFT);
   }
 }

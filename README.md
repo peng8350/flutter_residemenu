@@ -15,7 +15,7 @@ dependencies:
   ...
 
   residemenu:
-    ^1.2.5
+    ^1.3.5
 
 ```
 
@@ -26,6 +26,15 @@ the more you can see the demo find how to use.If you do not meet your needs, you
 
 
 ```
+
+
+       initState(){
+          _menuController = MenuController(vsync:this,direction:ScrollDirection.Left);
+       }
+
+       dispose(){
+          _menuController.dispose();
+       }
 
       Widget buildItem(msg) {
         return new Material(
@@ -80,7 +89,6 @@ the more you can see the demo find how to use.If you do not meet your needs, you
 | Attribute Name     |     Attribute Explain     | Parameter Type | Default Value  | requirement |
 |---------|--------------------------|:-----:|:-----:|:-----:|
 | child      | your content View   | Widget   |   null |  necessary |
-| direction | The direction of allowing ResideMenu to slide     | enum  | left | optional |
 | leftView,rightView | the Menu Content View     | Widget  | null | optional |
 | elevation |   Content View shadow | double | 12.0 |optional |
 | controller | Control menu behavior, get menu status, monitor menu open, close and other events.   | MenuController | null | optional |

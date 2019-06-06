@@ -20,3 +20,20 @@
 
 ## [1.2.5] - 2018-5-30
 * Add enableScale,enableFade option,ScaleAnimation has a proformance problem
+
+
+## [1.3.1] - 2019-6-3
+* Add enable3Drotate
+* Remove bottom menuView and bg after closeMenu(improve performance)
+* Optimizing internal code
+
+## [1.3.2] - 2019-6-3
+* Fix direction not working
+* Move direction from ResideMenu to MenuController
+* Fix onClose,onOpen callback
+
+## [1.3.3] - 2019-6-4
+* Fix decoration bug which invoke rebuild state
+
+## [1.3.5] - 2019-6-5
+* Fix init menuController not reference
