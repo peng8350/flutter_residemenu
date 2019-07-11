@@ -37,3 +37,6 @@
 
 ## [1.3.5] - 2019-6-5
 * Fix init menuController not reference
+
+## [1.3.6]
+* enlarge start dx to trigger open remenu distance(if too small,user vertical gesture will open menu too)

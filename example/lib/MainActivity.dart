@@ -18,7 +18,7 @@ class _MainActivityState extends State<MainActivity>
       color: Colors.transparent,
       child: new InkWell(
         child: const ResideMenuItem(
-            title: "菜单一", icon: const Icon(Icons.home, color: Colors.grey),right: const Icon(Icons.arrow_forward,color:Colors.grey),),
+          title: "菜单一", icon: const Icon(Icons.home, color: Colors.grey),right: const Icon(Icons.arrow_forward,color:Colors.grey),),
         onTap: () {
           Scaffold
               .of(context)

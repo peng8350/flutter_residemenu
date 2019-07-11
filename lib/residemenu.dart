@@ -92,8 +92,9 @@ class _ResideMenuState extends State<ResideMenu>
   void _onScrollMove(DragUpdateDetails details) {
     double offset = details.delta.dx / _width * 2.0;
     if (_controller.value == 0.0) {
+
       if (details.delta.dy.abs() > details.delta.dx.abs() ||
-          details.delta.dx.abs() < 5) return;
+          details.delta.dx.abs() < 12) return;
     }
     _controller.value += offset;
   }
@@ -192,8 +193,8 @@ class _ResideMenuState extends State<ResideMenu>
     return new LayoutBuilder(builder: (context, cons) {
       _width = cons.biggest.width;
       return new GestureDetector(
-        onHorizontalDragUpdate: _onScrollMove,
-        onHorizontalDragEnd: _onScrollEnd,
+        onPanUpdate: _onScrollMove,
+        onPanEnd: _onScrollEnd,
         child: new Stack(
           children: <Widget>[
             _scrollState.value != ScrollState.NONE
