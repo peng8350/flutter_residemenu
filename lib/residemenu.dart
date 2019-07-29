@@ -6,6 +6,7 @@
 
 library residemenu;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -286,9 +287,9 @@ class ResideMenuItem extends StatelessWidget {
       this.titleStyle: const TextStyle(
           inherit: true, color: const Color(0xffdddddd), fontSize: 15.0),
       this.icon: const Text(""),
-      this.right: const Text(""),
+      this.right: const Icon(Icons.arrow_forward_ios,color: Colors.grey,),
       this.height: 50.0,
-      this.leftSpacing: 40.0,
+      this.leftSpacing: 15.0,
       this.rightSpacing: 50.0,
       this.midSpacing: 30.0});
 
@@ -297,19 +298,21 @@ class ResideMenuItem extends StatelessWidget {
     // TODO: implement build
     return new Container(
         height: 40.0,
-        alignment: Alignment.topRight,
         child: new Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            new Container(width: leftSpacing),
-            icon,
-            new Container(
-              width: midSpacing,
+            Container(
+              child: Row(
+                children: <Widget>[
+                  icon,Container(width: midSpacing,),Text(title,style: titleStyle,)
+                ],
+              ),
+              margin: EdgeInsets.only(left: leftSpacing),
             ),
-            new Text(title, style: titleStyle),
-            new Container(
-              width: rightSpacing,
-            ),
-            right
+            Padding(
+              child: right,
+              padding: EdgeInsets.only(right: rightSpacing),
+            )
           ],
         ));
   }

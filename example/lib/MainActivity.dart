@@ -13,16 +13,16 @@ class _MainActivityState extends State<MainActivity>
     with TickerProviderStateMixin {
   MenuController _menuController;
 
-  Widget buildItem(msg) {
+  Widget buildItem(String msg1) {
     return new Material(
       color: Colors.transparent,
       child: new InkWell(
-        child: const ResideMenuItem(
-          title: "菜单一", icon: const Icon(Icons.home, color: Colors.grey),right: const Icon(Icons.arrow_forward,color:Colors.grey),),
+        child:  ResideMenuItem(
+          title: msg1, icon: const Icon(Icons.home, color: Colors.grey)),
         onTap: () {
           Scaffold
               .of(context)
-              .showSnackBar(new SnackBar(content: new Text('你点击了$msg')));
+              .showSnackBar(new SnackBar(content: new Text('你点击了$msg1')));
         },
       ),
     );
@@ -55,7 +55,7 @@ class _MainActivityState extends State<MainActivity>
           ),
         ),
         children: <Widget>[
-          buildItem("菜单一"),
+          buildItem("菜单一a"),
           buildItem("菜单二"),
           buildItem("菜单三"),
           buildItem("菜单四"),
@@ -92,16 +92,22 @@ class _MainActivityState extends State<MainActivity>
                     fit: BoxFit.cover),
               ),
             ),
-            new ListView(
-              shrinkWrap: true,
-              children: <Widget>[
-                new Text('sd'),
-                new Text('sd'),
-                new Text('sd'),
-                new Text('sd'),
-                new Text('sd')
-              ],
-              itemExtent: 50.0,
+            Expanded(
+              child: new ListView(
+                children: <Widget>[
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd'),
+                  new Text('sd')
+                ],
+                itemExtent: 150.0,
+              ),
             )
           ],
         ),
