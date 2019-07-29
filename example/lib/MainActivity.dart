@@ -92,22 +92,28 @@ class _MainActivityState extends State<MainActivity>
                     fit: BoxFit.cover),
               ),
             ),
-            Expanded(
-              child: new ListView(
-                children: <Widget>[
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd'),
-                  new Text('sd')
-                ],
-                itemExtent: 150.0,
+            WillPopScope(
+              child: Expanded(
+                child: new ListView(
+                  children: <Widget>[
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd'),
+                    new Text('sd')
+                  ],
+                  itemExtent: 150.0,
+                ),
               ),
+              onWillPop: () async{
+                print("b");
+                return true;
+              },
             )
           ],
         ),

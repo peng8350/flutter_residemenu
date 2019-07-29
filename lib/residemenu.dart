@@ -95,7 +95,7 @@ class _ResideMenuState extends State<ResideMenu>
     if (_controller.value == 0.0) {
 
       if (details.delta.dy.abs() > details.delta.dx.abs() ||
-          details.delta.dx.abs() < 12) return;
+          details.delta.dx.abs() < 10) return;
     }
     _controller.value += offset;
   }
@@ -193,78 +193,89 @@ class _ResideMenuState extends State<ResideMenu>
   Widget build(BuildContext context) {
     return new LayoutBuilder(builder: (context, cons) {
       _width = cons.biggest.width;
-      return new GestureDetector(
-        onPanUpdate: _onScrollMove,
-        onPanEnd: _onScrollEnd,
-        child: new Stack(
-          children: <Widget>[
-            _scrollState.value != ScrollState.NONE
-                ? new Container(
-                    decoration: widget.decoration,
-                  )
-                : null,
-            _scrollState.value != ScrollState.NONE
-                ? _MenuTransition(
-                    offset: _controller,
-                    child: new Container(
-                        margin: new EdgeInsets.only(
-                            left:
-                                (_scrollState.value == ScrollState.ScrollToRight
-                                    ? cons.biggest.width * 0.3
-                                    : 0.0),
-                            right:
-                                (_scrollState.value == ScrollState.ScrollToLeft
-                                    ? cons.biggest.width * 0.3
-                                    : 0.0)),
-                        child: _scrollState.value == ScrollState.ScrollToLeft
-                            ? widget.leftView
-                            : widget.rightView),
-                  )
-                : null,
-            _ContentTransition(
-                enableScale: widget.enableScale,
-                enable3D: widget.enable3dRotate,
-                child: new Stack(
-                  children: <Widget>[
-                    Container(
-                      child: widget.child,
-                      decoration: new BoxDecoration(boxShadow: <BoxShadow>[
-                        new BoxShadow(
-                          color: const Color(0xcc000000),
-                          offset: const Offset(-2.0, 2.0),
-                          blurRadius: widget.elevation * 0.66,
-                        ),
-                      ]) ,
-                    ),
-                    _scrollState.value != ScrollState.NONE
-                        ? AnimatedBuilder(
-                            animation: _controller,
-                            builder: (c, w) {
-                              return GestureDetector(
-                                child: Container(
-                                  width: cons.biggest.width,
-                                  height: cons.biggest.height,
-                                  color: new Color.fromARGB(
-                                      !widget.enableFade
-                                          ? 0
-                                          : (125 * _controller.value.abs())
-                                              .toInt(),
-                                      0,
-                                      0,
-                                      0),
-                                ),
-                                onTap: () {
-                                  _controller.closeMenu();
-                                },
-                              );
+      return WillPopScope(
+        child: GestureDetector(
+          onPanUpdate: _onScrollMove,
+          onPanEnd: _onScrollEnd,
+          child: new Stack(
+            children: <Widget>[
+              _scrollState.value != ScrollState.NONE
+                  ? new Container(
+                decoration: widget.decoration,
+              )
+                  : null,
+              _scrollState.value != ScrollState.NONE
+                  ? _MenuTransition(
+                offset: _controller,
+                child: new Container(
+                    margin: new EdgeInsets.only(
+                        left:
+                        (_scrollState.value == ScrollState.ScrollToRight
+                            ? cons.biggest.width * 0.3
+                            : 0.0),
+                        right:
+                        (_scrollState.value == ScrollState.ScrollToLeft
+                            ? cons.biggest.width * 0.3
+                            : 0.0)),
+                    child: _scrollState.value == ScrollState.ScrollToLeft
+                        ? widget.leftView
+                        : widget.rightView),
+              )
+                  : null,
+              _ContentTransition(
+                  enableScale: widget.enableScale,
+                  enable3D: widget.enable3dRotate,
+                  child: new Stack(
+                    children: <Widget>[
+                      Container(
+                        child: widget.child,
+                        decoration: new BoxDecoration(boxShadow: <BoxShadow>[
+                          new BoxShadow(
+                            color: const Color(0xcc000000),
+                            offset: const Offset(-2.0, 2.0),
+                            blurRadius: widget.elevation * 0.66,
+                          ),
+                        ]) ,
+                      ),
+                      _scrollState.value != ScrollState.NONE
+                          ? AnimatedBuilder(
+                        animation: _controller,
+                        builder: (c, w) {
+                          return GestureDetector(
+                            child: Container(
+                              width: cons.biggest.width,
+                              height: cons.biggest.height,
+                              color: new Color.fromARGB(
+                                  !widget.enableFade
+                                      ? 0
+                                      : (125 * _controller.value.abs())
+                                      .toInt(),
+                                  0,
+                                  0,
+                                  0),
+                            ),
+                            onTap: () {
+                              _controller.closeMenu();
                             },
-                          )
-                        : null,
-                  ].where((child) => child != null).toList(),
-                ),
-                menuOffset: _controller),
-          ].where((child) => child != null).toList(),
+                          );
+                        },
+                      )
+                          : null,
+                    ].where((child) => child != null).toList(),
+                  ),
+                  menuOffset: _controller),
+            ].where((child) => child != null).toList(),
+          ),
         ),
+        onWillPop: () async{
+          print("a");
+          if(_controller.value!=0){
+            _controller.closeMenu();
+            return false;
+          }
+          return true;
+
+        },
       );
     });
   }
