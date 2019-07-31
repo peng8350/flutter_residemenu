@@ -93,7 +93,6 @@ class _ResideMenuState extends State<ResideMenu>
   void _onScrollMove(DragUpdateDetails details) {
     double offset = details.delta.dx / _width * 2.0;
     if (_controller.value == 0.0) {
-
       if (details.delta.dy.abs() > details.delta.dx.abs() ||
           details.delta.dx.abs() < 10) return;
     }
@@ -148,16 +147,17 @@ class _ResideMenuState extends State<ResideMenu>
 
   // update listener
   void _update() {
-    final MenuController newController = widget.controller  ?? MenuController(vsync: this,direction: ScrollDirection.LEFT);
+    final MenuController newController = widget.controller ??
+        MenuController(vsync: this, direction: ScrollDirection.LEFT);
     if (newController == null || newController == _controller) return;
     if (_controller != null)
       _controller
         ..removeListener(_handleScrollChange)
         ..removeStatusListener(_handleScrollEnd);
     _controller = newController;
-      _controller
-        ..addListener(_handleScrollChange)
-        ..addStatusListener(_handleScrollEnd);
+    _controller
+      ..addListener(_handleScrollChange)
+      ..addStatusListener(_handleScrollEnd);
   }
 
   @override
@@ -201,26 +201,26 @@ class _ResideMenuState extends State<ResideMenu>
             children: <Widget>[
               _scrollState.value != ScrollState.NONE
                   ? new Container(
-                decoration: widget.decoration,
-              )
+                      decoration: widget.decoration,
+                    )
                   : null,
               _scrollState.value != ScrollState.NONE
                   ? _MenuTransition(
-                offset: _controller,
-                child: new Container(
-                    margin: new EdgeInsets.only(
-                        left:
-                        (_scrollState.value == ScrollState.ScrollToRight
-                            ? cons.biggest.width * 0.3
-                            : 0.0),
-                        right:
-                        (_scrollState.value == ScrollState.ScrollToLeft
-                            ? cons.biggest.width * 0.3
-                            : 0.0)),
-                    child: _scrollState.value == ScrollState.ScrollToLeft
-                        ? widget.leftView
-                        : widget.rightView),
-              )
+                      offset: _controller,
+                      child: new Container(
+                          margin: new EdgeInsets.only(
+                              left: (_scrollState.value ==
+                                      ScrollState.ScrollToRight
+                                  ? cons.biggest.width * 0.3
+                                  : 0.0),
+                              right: (_scrollState.value ==
+                                      ScrollState.ScrollToLeft
+                                  ? cons.biggest.width * 0.3
+                                  : 0.0)),
+                          child: _scrollState.value == ScrollState.ScrollToLeft
+                              ? widget.leftView
+                              : widget.rightView),
+                    )
                   : null,
               _ContentTransition(
                   enableScale: widget.enableScale,
@@ -235,31 +235,31 @@ class _ResideMenuState extends State<ResideMenu>
                             offset: const Offset(-2.0, 2.0),
                             blurRadius: widget.elevation * 0.66,
                           ),
-                        ]) ,
+                        ]),
                       ),
                       _scrollState.value != ScrollState.NONE
                           ? AnimatedBuilder(
-                        animation: _controller,
-                        builder: (c, w) {
-                          return GestureDetector(
-                            child: Container(
-                              width: cons.biggest.width,
-                              height: cons.biggest.height,
-                              color: new Color.fromARGB(
-                                  !widget.enableFade
-                                      ? 0
-                                      : (125 * _controller.value.abs())
-                                      .toInt(),
-                                  0,
-                                  0,
-                                  0),
-                            ),
-                            onTap: () {
-                              _controller.closeMenu();
-                            },
-                          );
-                        },
-                      )
+                              animation: _controller,
+                              builder: (c, w) {
+                                return GestureDetector(
+                                  child: Container(
+                                    width: cons.biggest.width,
+                                    height: cons.biggest.height,
+                                    color: new Color.fromARGB(
+                                        !widget.enableFade
+                                            ? 0
+                                            : (125 * _controller.value.abs())
+                                                .toInt(),
+                                        0,
+                                        0,
+                                        0),
+                                  ),
+                                  onTap: () {
+                                    _controller.closeMenu();
+                                  },
+                                );
+                              },
+                            )
                           : null,
                     ].where((child) => child != null).toList(),
                   ),
@@ -267,14 +267,12 @@ class _ResideMenuState extends State<ResideMenu>
             ].where((child) => child != null).toList(),
           ),
         ),
-        onWillPop: () async{
-          print("a");
-          if(_controller.value!=0){
+        onWillPop: () async {
+          if (_controller.value != 0) {
             _controller.closeMenu();
             return false;
           }
           return true;
-
         },
       );
     });
@@ -298,7 +296,10 @@ class ResideMenuItem extends StatelessWidget {
       this.titleStyle: const TextStyle(
           inherit: true, color: const Color(0xffdddddd), fontSize: 15.0),
       this.icon: const Text(""),
-      this.right: const Icon(Icons.arrow_forward_ios,color: Colors.grey,),
+      this.right: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.grey,
+      ),
       this.height: 50.0,
       this.leftSpacing: 15.0,
       this.rightSpacing: 50.0,
@@ -315,7 +316,14 @@ class ResideMenuItem extends StatelessWidget {
             Container(
               child: Row(
                 children: <Widget>[
-                  icon,Container(width: midSpacing,),Text(title,style: titleStyle,)
+                  icon,
+                  Container(
+                    width: midSpacing,
+                  ),
+                  Text(
+                    title,
+                    style: titleStyle,
+                  )
                 ],
               ),
               margin: EdgeInsets.only(left: leftSpacing),

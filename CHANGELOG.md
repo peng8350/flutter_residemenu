@@ -40,3 +40,7 @@
 
 ## [1.3.6]
 * enlarge start dx to trigger open remenu distance(if too small,user vertical gesture will open menu too)
+
+## [1.3.7]
+* interrupt close Modal when menu is open,when user press back
+* fix residemenuitem  layout

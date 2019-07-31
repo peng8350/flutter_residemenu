@@ -17,11 +17,10 @@ class _MainActivityState extends State<MainActivity>
     return new Material(
       color: Colors.transparent,
       child: new InkWell(
-        child:  ResideMenuItem(
-          title: msg1, icon: const Icon(Icons.home, color: Colors.grey)),
+        child: ResideMenuItem(
+            title: msg1, icon: const Icon(Icons.home, color: Colors.grey)),
         onTap: () {
-          Scaffold
-              .of(context)
+          Scaffold.of(context)
               .showSnackBar(new SnackBar(content: new Text('你点击了$msg1')));
         },
       ),
@@ -46,10 +45,8 @@ class _MainActivityState extends State<MainActivity>
               fit: BoxFit.none)),
       leftScaffold: new MenuScaffold(
         header: new ConstrainedBox(
-
           constraints: new BoxConstraints(maxHeight: 80.0, maxWidth: 80.0),
           child: new CircleAvatar(
-
             backgroundImage: new AssetImage('images/author.jpeg'),
             radius: 40.0,
           ),
@@ -110,8 +107,7 @@ class _MainActivityState extends State<MainActivity>
                   itemExtent: 150.0,
                 ),
               ),
-              onWillPop: () async{
-                print("b");
+              onWillPop: () async {
                 return true;
               },
             )
@@ -143,9 +139,7 @@ class _MainActivityState extends State<MainActivity>
       onOpen: (left) {
         print(left);
       },
-      onOffsetChange: (offset) {
-
-      },
+      onOffsetChange: (offset) {},
     );
   }
 
@@ -153,6 +147,7 @@ class _MainActivityState extends State<MainActivity>
   void initState() {
     // TODO: implement initState
     super.initState();
-    _menuController = new MenuController(vsync: this,direction: ScrollDirection.LEFT);
+    _menuController =
+        new MenuController(vsync: this, direction: ScrollDirection.LEFT);
   }
 }
